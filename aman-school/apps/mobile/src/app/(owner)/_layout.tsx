@@ -1,0 +1,44 @@
+import { Text, TouchableOpacity } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { colors } from "@aman-school/shared-ui";
+import { RoleGuardLayout, useLogout } from "../../features/shared/RoleGuardLayout";
+
+function LogoutHeaderButton() {
+  const router = useRouter();
+  const logout = useLogout();
+  return (
+    <TouchableOpacity
+      hitSlop={10}
+      onPress={async () => {
+        await logout();
+        router.replace("/(auth)/role-select");
+      }}
+    >
+      <Text style={{ color: colors.white, fontSize: 13, fontWeight: "700" }}>خروج</Text>
+    </TouchableOpacity>
+  );
+}
+
+export default function OwnerLayout() {
+  return (
+    <RoleGuardLayout allow={["owner", "partner"]}>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.purpleMid },
+          headerTintColor: colors.white,
+          headerTitleAlign: "center",
+        }}
+      >
+        <Stack.Screen name="dashboard" options={{ title: "لوحة المالك", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="schools" options={{ title: "إدارة المدارس" }} />
+        <Stack.Screen name="school/[id]" options={{ title: "تفاصيل المدرسة" }} />
+        <Stack.Screen name="partners" options={{ title: "إدارة الشركاء" }} />
+        <Stack.Screen name="packages" options={{ title: "الباقات والاشتراكات" }} />
+        <Stack.Screen name="revenue" options={{ title: "الإيرادات والفوترة" }} />
+        <Stack.Screen name="analytics" options={{ title: "تحليلات المنصة" }} />
+        <Stack.Screen name="settings" options={{ title: "إعدادات النظام", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="partner-dashboard" options={{ title: "لوحة الشريك", headerRight: LogoutHeaderButton }} />
+      </Stack>
+    </RoleGuardLayout>
+  );
+}

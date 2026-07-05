@@ -13,6 +13,17 @@ import { ApiClientConfig, createHttp } from "./http";
 export { createSocket } from "./socket";
 export * from "./http";
 
+/** Bus + backend-only runtime telemetry fields (see backend/prisma/schema.prisma
+ * comment on the Bus model) — additive, never sent by the client, only read. */
+export type BusWithTelemetry = Bus & {
+  gpsActive: boolean;
+  currentLat: number | null;
+  currentLng: number | null;
+  currentSpeedKmh: number | null;
+  lastGpsAt: string | null;
+  route?: { id: string; stops: Array<{ id: string; order: number; name: string; lat: number; lng: number }> } | null;
+};
+
 export function createApiClient(config: ApiClientConfig) {
   const http = createHttp(config);
 
@@ -32,6 +43,10 @@ export function createApiClient(config: ApiClientConfig) {
         http.post<AuthResponse>("/auth/ops-room/login", { email, password }),
       ownerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/owner/login", { email, password }),
+      partnerLogin: (email: string, password: string) =>
+        http.post<AuthResponse>("/auth/partner/login", { email, password }),
+      refresh: (refreshToken: string) => http.post<AuthResponse>("/auth/refresh", { refreshToken }),
+      logout: (refreshToken: string) => http.post<void>("/auth/logout", { refreshToken }),
     },
 
     supervisor: {
@@ -93,8 +108,8 @@ export function createApiClient(config: ApiClientConfig) {
         http.put<Student>(`/students/${studentId}`, body),
       studentQrCode: (studentId: string) => http.get<{ qrDataUrl: string }>(`/students/${studentId}/qr-code`),
       student: (studentId: string) => http.get<Student>(`/students/${studentId}`),
-      buses: (schoolId: string) => http.get<Bus[]>(`/schools/${schoolId}/buses`),
-      createBus: (schoolId: string, body: Partial<Bus>) => http.post<Bus>(`/schools/${schoolId}/buses`, body),
+      buses: (schoolId: string) => http.get<BusWithTelemetry[]>(`/schools/${schoolId}/buses`),
+      createBus: (schoolId: string, body: Partial<Bus>) => http.post<BusWithTelemetry>(`/schools/${schoolId}/buses`, body),
       setBusGpsDevice: (busId: string, gpsDeviceId: string) =>
         http.put(`/buses/${busId}/gps-device`, { gpsDeviceId }),
       supervisors: (schoolId: string) => http.get<User[]>(`/schools/${schoolId}/supervisors`),
