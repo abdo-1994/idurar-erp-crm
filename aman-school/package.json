@@ -1,0 +1,21 @@
+{
+  "name": "aman-school",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Aman School — Multi-tenant school-bus safety SaaS (monorepo)",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "backend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w backend",
+    "dev:mobile": "npm run start -w apps/mobile",
+    "build:types": "npm run build -w @aman-school/types",
+    "build:api-client": "npm run build -w @aman-school/api-client",
+    "build:shared-ui": "npm run build -w @aman-school/shared-ui"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
