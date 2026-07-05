@@ -1,15 +1,22 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
-import type {
-  Alert,
-  ClientToServerEvents,
-  GpsPing,
-  ServerToClientEvents,
-  Trip,
-  TripEvent,
-} from "@aman-school/types";
+import type { ClientToServerEvents, GpsPing, ServerToClientEvents, Trip, TripEvent, Alert } from "@aman-school/types";
+import type { Trip as PrismaTrip, TripEvent as PrismaTripEvent, Alert as PrismaAlert } from "@prisma/client";
 import { env } from "../env";
 import { verifyAccessToken } from "../auth/jwt";
+
+/** Prisma returns Date objects for datetime columns; the shared wire types (from
+ * @aman-school/types, used by both backend and mobile app) declare ISO date
+ * strings. JSON(.stringify)/Socket.IO serialize Date -> ISO string identically at
+ * runtime either way, so this is purely a compile-time shape reconciliation. */
+function serializeDates<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = { ...obj };
+  for (const key of Object.keys(out)) {
+    const value = out[key];
+    if (value instanceof Date) out[key] = value.toISOString();
+  }
+  return out as T;
+}
 
 type AppServer = Server<ClientToServerEvents, ServerToClientEvents>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -56,27 +63,31 @@ export function emitBusLocation(ping: GpsPing, schoolId: string) {
   server.to("operations").emit("bus:location", ping);
 }
 
-export function emitTripUpdated(trip: Trip) {
+export function emitTripUpdated(tripRow: PrismaTrip) {
+  const trip = serializeDates(tripRow) as unknown as Trip;
   const server = getIo();
   server.to(`bus:${trip.busId}`).emit("trip:updated", trip);
   server.to(`school:${trip.schoolId}`).emit("trip:updated", trip);
   server.to("operations").emit("trip:updated", trip);
 }
 
-export function emitTripEvent(event: TripEvent, busId: string, schoolId: string) {
+export function emitTripEvent(eventRow: PrismaTripEvent, busId: string, schoolId: string) {
+  const event = serializeDates(eventRow) as unknown as TripEvent;
   const server = getIo();
   server.to(`bus:${busId}`).emit("trip:event", event);
   server.to(`school:${schoolId}`).emit("trip:event", event);
   server.to("operations").emit("trip:event", event);
 }
 
-export function emitAlertNew(alert: Alert) {
+export function emitAlertNew(alertRow: PrismaAlert) {
+  const alert = serializeDates(alertRow) as unknown as Alert;
   const server = getIo();
   server.to(`school:${alert.schoolId}`).emit("alert:new", alert);
   server.to("operations").emit("alert:new", alert);
 }
 
-export function emitAlertUpdated(alert: Alert) {
+export function emitAlertUpdated(alertRow: PrismaAlert) {
+  const alert = serializeDates(alertRow) as unknown as Alert;
   const server = getIo();
   server.to(`school:${alert.schoolId}`).emit("alert:updated", alert);
   server.to("operations").emit("alert:updated", alert);
