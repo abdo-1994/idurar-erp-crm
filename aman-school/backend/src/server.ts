@@ -19,7 +19,6 @@ import { ownerRouter } from "./routes/owner.routes";
 import { partnerRouter } from "./routes/partner.routes";
 import { subscriptionsRouter } from "./routes/subscriptions.routes";
 import { sysadminRouter } from "./routes/sysadmin.routes";
-import { internalRouter } from "./routes/internal.routes";
 import { initSocketGateway } from "./sockets/gateway";
 import { startGpsSimulator } from "./sockets/simulator";
 
@@ -43,7 +42,6 @@ app.use((req, res, next) => {
 });
 
 app.use(healthRouter);
-app.use(internalRouter);
 app.use(authRouter);
 app.use(studentsRouter);
 app.use(tripsRouter);
