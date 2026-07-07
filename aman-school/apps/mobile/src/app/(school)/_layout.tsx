@@ -31,6 +31,7 @@ export default function SchoolLayout() {
         <Stack.Screen name="reports" options={{ title: "التقارير والإحصائيات" }} />
         <Stack.Screen name="alerts" options={{ title: "التنبيهات والإشعارات" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات المدرسة" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

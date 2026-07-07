@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
@@ -7,54 +7,49 @@ import { api } from "../../lib/api";
 /** OPS-01, adapted from the original 1920x1080 dark-mode control-room design
  * to a mobile-friendly dark layout — same live data, denser desktop-style
  * grid isn't practical on a phone screen. */
+const LINKS = [
+  { href: "/(operations)/alerts", label: "🔔 إدارة التنبيهات", accent: colors.redMid },
+  { href: "/(operations)/daily-report", label: "📊 تقرير اليوم", accent: colors.blueMid },
+  { href: "/(operations)/communications", label: "💬 التواصل", accent: colors.tealMid },
+  { href: "/(operations)/incidents", label: "📋 سجل الحوادث", accent: colors.amberMid },
+  { href: "/(operations)/not-collected", label: "🚨 حالات عدم استلام الطلاب", accent: colors.red },
+  { href: "/(operations)/profile", label: "👤 حسابي", accent: colors.purpleMid },
+  { href: "/(operations)/settings", label: "⚙️ الإعدادات", accent: colors.gray400 },
+  { href: "/(operations)/contact", label: "💬 الدعم الفني", accent: colors.greenMid },
+] as const;
+
 export default function ControlRoomScreen() {
   const router = useRouter();
-  const { data: trips } = useQuery({ queryKey: ["active-trips"], queryFn: () => api.operations.activeTrips(), refetchInterval: 6000 });
-  const { data: alerts } = useQuery({ queryKey: ["active-alerts"], queryFn: () => api.operations.alerts("active"), refetchInterval: 6000 });
+  const {
+    data: trips,
+    isLoading: tripsLoading,
+    refetch: refetchTrips,
+    isRefetching: tripsRefetching,
+  } = useQuery({ queryKey: ["active-trips"], queryFn: () => api.operations.activeTrips(), refetchInterval: 6000 });
+  const { data: alerts, isLoading: alertsLoading } = useQuery({
+    queryKey: ["active-alerts"],
+    queryFn: () => api.operations.alerts("active"),
+    refetchInterval: 6000,
+  });
 
   return (
-    <ScreenContainer backgroundColor={colors.navy}>
+    <ScreenContainer backgroundColor={colors.navy} refreshing={tripsRefetching} onRefresh={refetchTrips}>
       <View style={styles.statsRow}>
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{trips?.length ?? 0}</Text>
+          <Text style={styles.statValue}>{tripsLoading ? "…" : trips?.length ?? 0}</Text>
           <Text style={styles.statLabel}>رحلات جارية</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={[styles.statValue, { color: colors.redMid }]}>{alerts?.length ?? 0}</Text>
+          <Text style={[styles.statValue, { color: colors.redMid }]}>{alertsLoading ? "…" : alerts?.length ?? 0}</Text>
           <Text style={styles.statLabel}>تنبيهات نشطة</Text>
         </View>
       </View>
 
-      <TouchableOpacity onPress={() => router.push("/(operations)/alerts")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.redMid}>
-          <Text style={styles.linkTitle}>🔔 إدارة التنبيهات</Text>
+      {LINKS.map((l) => (
+        <Card key={l.href} style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={l.accent} onPress={() => router.push(l.href as never)}>
+          <Text style={styles.linkTitle}>{l.label}</Text>
         </Card>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/(operations)/daily-report")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.blueMid}>
-          <Text style={styles.linkTitle}>📊 تقرير اليوم</Text>
-        </Card>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/(operations)/communications")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.tealMid}>
-          <Text style={styles.linkTitle}>💬 التواصل</Text>
-        </Card>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/(operations)/incidents")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.amberMid}>
-          <Text style={styles.linkTitle}>📋 سجل الحوادث</Text>
-        </Card>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/(operations)/not-collected")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.red}>
-          <Text style={styles.linkTitle}>🚨 حالات عدم استلام الطلاب</Text>
-        </Card>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/(operations)/profile")}>
-        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.purpleMid}>
-          <Text style={styles.linkTitle}>👤 حسابي</Text>
-        </Card>
-      </TouchableOpacity>
+      ))}
 
       <Text style={styles.sectionTitle}>الرحلات الجارية الآن</Text>
       {trips?.map((t: any) => (

@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, StatusPill, colors, EmptyState } from "@aman-school/shared-ui";
+import { Button, Card, ScreenContainer, StatusPill, colors, EmptyState, ErrorState, LoadingState } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
 
@@ -18,7 +18,7 @@ const STATUS_LABEL: Record<string, string> = { scheduled: "مجدولة", active
 export default function TripSelectScreen() {
   const router = useRouter();
   const setTripId = useActiveTripStore((s) => s.setTripId);
-  const { data: trips, isLoading, refetch } = useQuery({
+  const { data: trips, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["supervisor", "trips-today"],
     queryFn: () => api.supervisor.todayTrips(),
   });
@@ -30,10 +30,12 @@ export default function TripSelectScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
       <Text style={styles.header}>رحلات اليوم</Text>
       {isLoading ? (
-        <Text style={styles.muted}>جاري التحميل...</Text>
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState onRetry={refetch} />
       ) : !trips?.length ? (
         <EmptyState icon="🗓️" title="لا توجد رحلات مجدولة اليوم" />
       ) : (
@@ -54,7 +56,6 @@ export default function TripSelectScreen() {
           )}
         />
       )}
-      <Button title="تحديث" variant="outline" onPress={() => refetch()} />
     </ScreenContainer>
   );
 }

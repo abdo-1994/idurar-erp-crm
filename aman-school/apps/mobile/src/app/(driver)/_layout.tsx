@@ -30,7 +30,10 @@ export default function DriverLayout() {
         }}
       >
         <Stack.Screen name="home" options={{ title: "أمان سكول — السائق", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
+        <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

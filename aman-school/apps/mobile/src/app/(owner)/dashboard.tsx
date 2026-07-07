@@ -1,7 +1,7 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { Card, ErrorState, ScreenContainer, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 
 const LINKS = [
@@ -16,12 +16,13 @@ const LINKS = [
   { href: "/(owner)/users", label: "المستخدمون", icon: "👥" },
   { href: "/(owner)/notifications", label: "الإشعارات", icon: "🔔" },
   { href: "/(owner)/settings", label: "الإعدادات", icon: "⚙️" },
+  { href: "/(owner)/contact", label: "الدعم الفني", icon: "💬" },
   { href: "/(owner)/profile", label: "حسابي", icon: "👤" },
 ];
 
 export default function OwnerDashboardScreen() {
   const router = useRouter();
-  const { data } = useQuery({
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["owner-platform-summary"],
     queryFn: () => api.owner.platformSummary() as Promise<{
       totalSchools: number; activeSchools: number; totalStudents: number; monthlyRevenue: number;
@@ -29,29 +30,33 @@ export default function OwnerDashboardScreen() {
   });
 
   return (
-    <ScreenContainer>
-      <View style={styles.statsGrid}>
-        {[
-          { label: "إجمالي المدارس", value: data?.totalSchools },
-          { label: "مدارس نشطة", value: data?.activeSchools },
-          { label: "الطلاب النشطون", value: data?.totalStudents },
-          { label: "الإيراد الشهري", value: data ? `${data.monthlyRevenue} ر.ي` : undefined },
-        ].map((s) => (
-          <Card key={s.label} style={styles.statCard}>
-            <Text style={styles.statValue}>{s.value ?? "-"}</Text>
-            <Text style={styles.statLabel}>{s.label}</Text>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      {isError ? (
+        <ErrorState onRetry={refetch} />
+      ) : (
+        <View style={styles.statsGrid}>
+          {[
+            { label: "إجمالي المدارس", value: data?.totalSchools },
+            { label: "مدارس نشطة", value: data?.activeSchools },
+            { label: "الطلاب النشطون", value: data?.totalStudents },
+            { label: "الإيراد الشهري", value: data ? `${data.monthlyRevenue} ر.ي` : undefined },
+          ].map((s) => (
+            <Card key={s.label} style={styles.statCard}>
+              <Text style={styles.statValue}>{isLoading ? "…" : s.value ?? "-"}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </Card>
+          ))}
+        </View>
+      )}
+
+      <View style={styles.linksGrid}>
+        {LINKS.map((l) => (
+          <Card key={l.href} style={styles.linkCard} accentColor={colors.purpleMid} onPress={() => router.push(l.href as never)}>
+            <Text style={styles.linkIcon}>{l.icon}</Text>
+            <Text style={styles.linkLabel}>{l.label}</Text>
           </Card>
         ))}
       </View>
-
-      <ScrollView contentContainerStyle={styles.linksGrid}>
-        {LINKS.map((l) => (
-          <Card key={l.href} style={styles.linkCard} accentColor={colors.purpleMid}>
-            <Text style={styles.linkIcon} onPress={() => router.push(l.href as never)}>{l.icon}</Text>
-            <Text style={styles.linkLabel} onPress={() => router.push(l.href as never)}>{l.label}</Text>
-          </Card>
-        ))}
-      </ScrollView>
     </ScreenContainer>
   );
 }

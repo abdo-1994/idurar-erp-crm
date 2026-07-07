@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "./theme";
+import { colors, radius } from "./theme";
 
 export type StatusTone = "success" | "warning" | "info" | "danger" | "neutral";
 
@@ -16,12 +16,22 @@ export function StatusPill({ label, tone = "neutral" }: { label: string; tone?: 
   const s = TONE_STYLES[tone];
   return (
     <View style={[styles.pill, { backgroundColor: s.bg }]}>
+      <View style={[styles.dot, { backgroundColor: s.fg }]} />
       <Text style={[styles.text, { color: s.fg }]}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  pill: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 2, alignSelf: "flex-start" },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignSelf: "flex-start",
+  },
+  dot: { width: 6, height: 6, borderRadius: 3 },
   text: { fontSize: 11, fontWeight: "700" },
 });

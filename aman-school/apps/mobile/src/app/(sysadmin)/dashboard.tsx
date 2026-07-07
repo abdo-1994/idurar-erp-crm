@@ -1,7 +1,7 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { Card, ErrorState, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 
 const LINKS = [
@@ -12,6 +12,8 @@ const LINKS = [
   { href: "/(sysadmin)/backup", label: "النسخ الاحتياطي", icon: "💾" },
   { href: "/(sysadmin)/security", label: "الأمان", icon: "🛡️" },
   { href: "/(sysadmin)/config", label: "الإعدادات", icon: "⚙️" },
+  { href: "/(sysadmin)/contact", label: "الدعم الفني", icon: "💬" },
+  { href: "/(sysadmin)/profile", label: "حسابي", icon: "👤" },
 ];
 
 type Dashboard = {
@@ -30,44 +32,59 @@ function formatUptime(seconds: number) {
 
 export default function SysadminDashboardScreen() {
   const router = useRouter();
-  const { data } = useQuery({
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["sysadmin-dashboard"],
     queryFn: () => api.sysadmin.dashboard() as Promise<Dashboard>,
     refetchInterval: 15000,
   });
 
   return (
-    <ScreenContainer>
-      <View style={styles.servicesRow}>
-        <StatusPill label={`API ${data?.services.apiServer ? "يعمل" : "متوقف"}`} tone={data?.services.apiServer ? "success" : "danger"} />
-        <StatusPill label={`قاعدة البيانات ${data?.services.database ? "تعمل" : "متوقفة"}`} tone={data?.services.database ? "success" : "danger"} />
-        <StatusPill label={`WebSocket ${data?.services.webSocket ? "يعمل" : "متوقف"}`} tone={data?.services.webSocket ? "success" : "danger"} />
-      </View>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      {isError ? (
+        <ErrorState onRetry={refetch} />
+      ) : (
+        <>
+          <View style={styles.servicesRow}>
+            <StatusPill
+              label={isLoading ? "API …" : `API ${data?.services.apiServer ? "يعمل" : "متوقف"}`}
+              tone={isLoading ? "neutral" : data?.services.apiServer ? "success" : "danger"}
+            />
+            <StatusPill
+              label={isLoading ? "قاعدة البيانات …" : `قاعدة البيانات ${data?.services.database ? "تعمل" : "متوقفة"}`}
+              tone={isLoading ? "neutral" : data?.services.database ? "success" : "danger"}
+            />
+            <StatusPill
+              label={isLoading ? "WebSocket …" : `WebSocket ${data?.services.webSocket ? "يعمل" : "متوقف"}`}
+              tone={isLoading ? "neutral" : data?.services.webSocket ? "success" : "danger"}
+            />
+          </View>
 
-      <View style={styles.statsGrid}>
-        {[
-          { label: "وقت التشغيل", value: data ? formatUptime(data.uptimeSeconds) : undefined },
-          { label: "زمن استجابة قاعدة البيانات", value: data ? `${data.dbLatencyMs} مللي‌ثانية` : undefined },
-          { label: "طلبات آخر 24 ساعة", value: data?.last24h.requests },
-          { label: "معدل الأخطاء", value: data ? `${data.last24h.errorRatePct}%` : undefined },
-          { label: "إجمالي المستخدمين", value: data?.totals.users },
-          { label: "إجمالي المدارس", value: data?.totals.schools },
-        ].map((s) => (
-          <Card key={s.label} style={styles.statCard}>
-            <Text style={styles.statValue}>{s.value ?? "-"}</Text>
-            <Text style={styles.statLabel}>{s.label}</Text>
-          </Card>
-        ))}
-      </View>
+          <View style={styles.statsGrid}>
+            {[
+              { label: "وقت التشغيل", value: data ? formatUptime(data.uptimeSeconds) : undefined },
+              { label: "زمن استجابة قاعدة البيانات", value: data ? `${data.dbLatencyMs} مللي‌ثانية` : undefined },
+              { label: "طلبات آخر 24 ساعة", value: data?.last24h.requests },
+              { label: "معدل الأخطاء", value: data ? `${data.last24h.errorRatePct}%` : undefined },
+              { label: "إجمالي المستخدمين", value: data?.totals.users },
+              { label: "إجمالي المدارس", value: data?.totals.schools },
+            ].map((s) => (
+              <Card key={s.label} style={styles.statCard}>
+                <Text style={styles.statValue}>{isLoading ? "…" : s.value ?? "-"}</Text>
+                <Text style={styles.statLabel}>{s.label}</Text>
+              </Card>
+            ))}
+          </View>
+        </>
+      )}
 
-      <ScrollView contentContainerStyle={styles.linksGrid}>
+      <View style={styles.linksGrid}>
         {LINKS.map((l) => (
-          <Card key={l.href} style={styles.linkCard} accentColor={colors.navy}>
-            <Text style={styles.linkIcon} onPress={() => router.push(l.href as never)}>{l.icon}</Text>
-            <Text style={styles.linkLabel} onPress={() => router.push(l.href as never)}>{l.label}</Text>
+          <Card key={l.href} style={styles.linkCard} accentColor={colors.navy} onPress={() => router.push(l.href as never)}>
+            <Text style={styles.linkIcon}>{l.icon}</Text>
+            <Text style={styles.linkLabel}>{l.label}</Text>
           </Card>
         ))}
-      </ScrollView>
+      </View>
     </ScreenContainer>
   );
 }
