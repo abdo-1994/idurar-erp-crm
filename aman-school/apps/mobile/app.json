@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "أمان سكول",
-    "slug": "aman-",
-    "owner": "abdozas94s-organization",
+    "slug": "aman-school-app",
+    "owner": "abzas94",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -47,7 +47,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d82abf14-726e-4287-b344-776627cba3b8"
+        "projectId": "c18feb9b-b89c-4239-8974-8cd65b24547e"
       }
     }
   }
