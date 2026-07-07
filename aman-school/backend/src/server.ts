@@ -43,6 +43,7 @@ app.use((req, res, next) => {
 });
 
 app.use(healthRouter);
+app.use(internalRouter);
 app.use(authRouter);
 app.use(studentsRouter);
 app.use(tripsRouter);
