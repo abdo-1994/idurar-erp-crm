@@ -7,7 +7,7 @@ import { api } from "../../lib/api";
 /** P-02: phone-only login, no password — requests an OTP then routes to P-03. */
 export default function ParentLoginScreen() {
   const router = useRouter();
-  const [phone, setPhone] = useState("+9665");
+  const [phone, setPhone] = useState("+9677");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,7 +35,7 @@ export default function ParentLoginScreen() {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
-        placeholder="+966501111111"
+        placeholder="+967712345671"
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="متابعة" onPress={onSubmit} loading={loading} disabled={phone.length < 8} />

@@ -15,8 +15,8 @@ export default function SosScreen() {
   async function sendSos() {
     setSending(true);
     try {
-      let lat = 24.7136;
-      let lng = 46.6753;
+      let lat = 15.3694; // صنعاء (fallback if location permission is denied)
+      let lng = 44.191;
       const perm = await Location.requestForegroundPermissionsAsync();
       if (perm.status === "granted") {
         const pos = await Location.getCurrentPositionAsync({});

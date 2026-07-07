@@ -10,11 +10,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "sa.amanschool.app",
+      "bundleIdentifier": "ye.amanschool.app",
       "supportsTablet": true
     },
     "android": {
-      "package": "sa.amanschool.app",
+      "package": "ye.amanschool.app",
       "adaptiveIcon": {
         "backgroundColor": "#0B2447",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

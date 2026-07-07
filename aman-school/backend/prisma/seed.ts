@@ -6,70 +6,70 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 const hash = (s: string) => bcrypt.hashSync(s, 10);
 
-const RIYADH = { lat: 24.7136, lng: 46.6753 };
+const SANAA = { lat: 15.3694, lng: 44.191 };
 
 async function main() {
   console.log("Seeding Aman School demo data...");
 
-  // ---- Packages ----
+  // ---- Packages (prices in Yemeni Rial — ر.ي) ----
   const [basic, advanced, full] = await Promise.all([
-    prisma.package.create({ data: { name: "أساسي", priceMonthly: 200, studentLimit: 100, features: ["تتبع مباشر", "إشعارات أساسية"] } }),
-    prisma.package.create({ data: { name: "متقدم", priceMonthly: 450, studentLimit: 300, features: ["تتبع مباشر", "تقارير", "غرفة عمليات"] } }),
-    prisma.package.create({ data: { name: "شامل", priceMonthly: 900, studentLimit: 1000, features: ["كل الميزات", "دعم أولوية"] } }),
+    prisma.package.create({ data: { name: "أساسي", priceMonthly: 50000, studentLimit: 100, features: ["تتبع مباشر", "إشعارات أساسية"] } }),
+    prisma.package.create({ data: { name: "متقدم", priceMonthly: 120000, studentLimit: 300, features: ["تتبع مباشر", "تقارير", "غرفة عمليات"] } }),
+    prisma.package.create({ data: { name: "شامل", priceMonthly: 250000, studentLimit: 1000, features: ["كل الميزات", "دعم أولوية"] } }),
   ]);
 
   // ---- Partner ----
-  const partner = await prisma.partner.create({ data: { name: "شريك الرياض", region: "الرياض", commissionPercent: 15 } });
+  const partner = await prisma.partner.create({ data: { name: "شريك اليمن", region: "أمانة العاصمة صنعاء", commissionPercent: 15 } });
 
-  // ---- Schools ----
+  // ---- Schools (صنعاء + عدن) ----
   const noor = await prisma.school.create({
-    data: { name: "مدرسة النور", slug: "noor", address: "الرياض، حي الملقا", packageId: advanced.id, partnerId: partner.id, subscriptionStatus: "active" },
+    data: { name: "مدرسة النور", slug: "noor", address: "صنعاء، حي حدة", packageId: advanced.id, partnerId: partner.id, subscriptionStatus: "active" },
   });
   const amal = await prisma.school.create({
-    data: { name: "مدرسة الأمل", slug: "amal", address: "الرياض، حي النرجس", packageId: basic.id, subscriptionStatus: "trial" },
+    data: { name: "مدرسة الأمل", slug: "amal", address: "عدن، حي المعلا", packageId: basic.id, subscriptionStatus: "trial" },
   });
 
   // ---- Platform-level users ----
   const owner = await prisma.user.create({
-    data: { role: "owner", name: "مالك المنصة", email: "owner@amanschool.sa", passwordHash: hash("Owner@12345") },
+    data: { role: "owner", name: "مالك المنصة", email: "owner@amanschool.ye", passwordHash: hash("Owner@12345") },
   });
   const partnerUser = await prisma.user.create({
-    data: { role: "partner", name: "شريك الرياض", email: "partner@amanschool.sa", passwordHash: hash("Partner@12345"), partnerId: partner.id },
+    data: { role: "partner", name: "شريك اليمن", email: "partner@amanschool.ye", passwordHash: hash("Partner@12345"), partnerId: partner.id },
   });
 
   // ---- School-scoped staff (noor) ----
   const noorAdmin = await prisma.user.create({
-    data: { role: "school_admin", name: "مدير مدرسة النور", email: "admin@noor.amanschool.sa", passwordHash: hash("Admin@12345"), schoolId: noor.id },
+    data: { role: "school_admin", name: "مدير مدرسة النور", email: "admin@noor.amanschool.ye", passwordHash: hash("Admin@12345"), schoolId: noor.id },
   });
   const noorOps = await prisma.user.create({
-    data: { role: "ops_room", name: "غرفة عمليات النور", email: "ops@noor.amanschool.sa", passwordHash: hash("Ops@12345"), schoolId: noor.id },
+    data: { role: "ops_room", name: "غرفة عمليات النور", email: "ops@noor.amanschool.ye", passwordHash: hash("Ops@12345"), schoolId: noor.id },
   });
   const amalAdmin = await prisma.user.create({
-    data: { role: "school_admin", name: "مدير مدرسة الأمل", email: "admin@amal.amanschool.sa", passwordHash: hash("Admin@12345"), schoolId: amal.id },
+    data: { role: "school_admin", name: "مدير مدرسة الأمل", email: "admin@amal.amanschool.ye", passwordHash: hash("Admin@12345"), schoolId: amal.id },
   });
 
-  // ---- Buses + routes (noor) ----
-  const bus1 = await prisma.bus.create({ data: { schoolId: noor.id, busNumber: "101", plateNumber: "ن ب ت 1234", capacity: 30 } });
-  const bus2 = await prisma.bus.create({ data: { schoolId: noor.id, busNumber: "102", plateNumber: "ن ب ت 5678", capacity: 30 } });
+  // ---- Buses + routes (noor, صنعاء) ----
+  const bus1 = await prisma.bus.create({ data: { schoolId: noor.id, busNumber: "101", plateNumber: "صنعاء 1234", capacity: 30 } });
+  const bus2 = await prisma.bus.create({ data: { schoolId: noor.id, busNumber: "102", plateNumber: "صنعاء 5678", capacity: 30 } });
 
   const route1 = await prisma.route.create({ data: { schoolId: noor.id, busId: bus1.id } });
   const route1Stops = await Promise.all(
     [
-      { order: 0, name: "المدرسة", lat: RIYADH.lat, lng: RIYADH.lng },
-      { order: 1, name: "حي الملقا", lat: 24.705, lng: 46.68 },
-      { order: 2, name: "حي الياسمين", lat: 24.699, lng: 46.69 },
-      { order: 3, name: "حي النرجس", lat: 24.69, lng: 46.7 },
-      { order: 4, name: "حي القيروان", lat: 24.68, lng: 46.71 },
+      { order: 0, name: "المدرسة", lat: SANAA.lat, lng: SANAA.lng },
+      { order: 1, name: "حي حدة", lat: 15.325, lng: 44.207 },
+      { order: 2, name: "حي الصافية", lat: 15.313, lng: 44.216 },
+      { order: 3, name: "شارع التحرير", lat: 15.354, lng: 44.206 },
+      { order: 4, name: "حي الروضة", lat: 15.407, lng: 44.206 },
     ].map((s) => prisma.stop.create({ data: { routeId: route1.id, ...s } }))
   );
 
   const route2 = await prisma.route.create({ data: { schoolId: noor.id, busId: bus2.id } });
   const route2Stops = await Promise.all(
     [
-      { order: 0, name: "المدرسة", lat: RIYADH.lat, lng: RIYADH.lng },
-      { order: 1, name: "حي العليا", lat: 24.72, lng: 46.66 },
-      { order: 2, name: "حي السليمانية", lat: 24.73, lng: 46.65 },
-      { order: 3, name: "حي المروج", lat: 24.74, lng: 46.64 },
+      { order: 0, name: "المدرسة", lat: SANAA.lat, lng: SANAA.lng },
+      { order: 1, name: "شارع الزبيري", lat: 15.362, lng: 44.191 },
+      { order: 2, name: "حي سعوان", lat: 15.38, lng: 44.225 },
+      { order: 3, name: "حي بيت بوس", lat: 15.3, lng: 44.18 },
     ].map((s) => prisma.stop.create({ data: { routeId: route2.id, ...s } }))
   );
 
@@ -78,13 +78,13 @@ async function main() {
   const sup2Pin = "1234";
   const sup1 = await prisma.user.create({
     data: {
-      role: "supervisor", name: "أحمد الشمري", phone: "+966501111111", schoolId: noor.id,
+      role: "supervisor", name: "أحمد الصنعاني", phone: "+967712345671", schoolId: noor.id,
       employeeCode: "EMP-1001", pinHash: hash(sup1Pin), supervisedBus: { connect: { id: bus1.id } },
     },
   });
   const sup2 = await prisma.user.create({
     data: {
-      role: "supervisor", name: "خالد العتيبي", phone: "+966502222222", schoolId: noor.id,
+      role: "supervisor", name: "خالد الحضرمي", phone: "+967712345672", schoolId: noor.id,
       employeeCode: "EMP-1002", pinHash: hash(sup2Pin), supervisedBus: { connect: { id: bus2.id } },
     },
   });
@@ -115,12 +115,12 @@ async function main() {
 
   // ---- Parents (6), one deliberately cross-tenant (links a noor + an amal student) ----
   const parentDefs = [
-    { name: "أبو سارة", phone: "+966550000001", studentIds: [noorStudents[0].id] },
-    { name: "أبو محمد", phone: "+966550000002", studentIds: [noorStudents[1].id] },
-    { name: "أم علي", phone: "+966550000003", studentIds: [noorStudents[2].id, noorStudents[3].id] },
-    { name: "أبو نورة", phone: "+966550000004", studentIds: [noorStudents[4].id, amalStudent.id] }, // cross-tenant parent
-    { name: "أم يوسف", phone: "+966550000005", studentIds: [noorStudents[5].id] },
-    { name: "أبو فهد", phone: "+966550000006", studentIds: [noorStudents[6].id, noorStudents[7].id] },
+    { name: "أبو سارة", phone: "+967700000001", studentIds: [noorStudents[0].id] },
+    { name: "أبو محمد", phone: "+967700000002", studentIds: [noorStudents[1].id] },
+    { name: "أم علي", phone: "+967700000003", studentIds: [noorStudents[2].id, noorStudents[3].id] },
+    { name: "أبو نورة", phone: "+967700000004", studentIds: [noorStudents[4].id, amalStudent.id] }, // cross-tenant parent
+    { name: "أم يوسف", phone: "+967700000005", studentIds: [noorStudents[5].id] },
+    { name: "أبو فهد", phone: "+967700000006", studentIds: [noorStudents[6].id, noorStudents[7].id] },
   ];
   for (const p of parentDefs) {
     const parent = await prisma.user.create({ data: { role: "parent", name: p.name, phone: p.phone } });
@@ -168,17 +168,17 @@ async function main() {
     "Generated by `prisma/seed.ts`. Use these to log into each of the 6 roles.",
     "",
     "## Owner",
-    `- email: \`owner@amanschool.sa\` / password: \`Owner@12345\``,
+    `- email: \`owner@amanschool.ye\` / password: \`Owner@12345\``,
     "",
-    "## Partner (شريك الرياض)",
-    `- email: \`partner@amanschool.sa\` / password: \`Partner@12345\` (partnerId: ${partner.id})`,
+    "## Partner (شريك اليمن)",
+    `- email: \`partner@amanschool.ye\` / password: \`Partner@12345\` (partnerId: ${partner.id})`,
     "",
     "## School Admin",
-    `- مدرسة النور: \`admin@noor.amanschool.sa\` / \`Admin@12345\``,
-    `- مدرسة الأمل: \`admin@amal.amanschool.sa\` / \`Admin@12345\``,
+    `- مدرسة النور (صنعاء): \`admin@noor.amanschool.ye\` / \`Admin@12345\``,
+    `- مدرسة الأمل (عدن): \`admin@amal.amanschool.ye\` / \`Admin@12345\``,
     "",
     "## Operations Room",
-    `- مدرسة النور: \`ops@noor.amanschool.sa\` / \`Ops@12345\``,
+    `- مدرسة النور: \`ops@noor.amanschool.ye\` / \`Ops@12345\``,
     "",
     "## Supervisors (employeeCode + PIN)",
     `- ${sup1.name}: employeeCode \`EMP-1001\`, PIN \`${sup1Pin}\` (bus 101)`,

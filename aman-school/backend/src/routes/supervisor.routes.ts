@@ -2,7 +2,8 @@ import { Router } from "express";
 import { prisma } from "../prisma";
 import { asyncHandler } from "../lib/asyncHandler";
 import { authenticate, requireRole } from "../auth/middleware";
-import { notFound } from "../lib/errors";
+import { badRequest, notFound, unauthorized } from "../lib/errors";
+import { compareSecret, hashSecret } from "../lib/password";
 
 export const supervisorRouter = Router();
 supervisorRouter.use(authenticate);
@@ -53,5 +54,22 @@ supervisorRouter.put(
       data: { notificationPrefs: req.body ?? {} },
     });
     res.json({ ok: true, notificationPrefs: updated.notificationPrefs });
+  })
+);
+
+/* ---- S-14: change PIN ---- */
+supervisorRouter.put(
+  "/supervisor/:id/pin",
+  requireRole("supervisor"),
+  asyncHandler(async (req, res) => {
+    if (req.user!.sub !== req.params.id) throw unauthorized();
+    const { currentPin, newPin } = req.body ?? {};
+    if (!currentPin || !newPin) throw badRequest("currentPin and newPin are required");
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!user || !user.pinHash || !compareSecret(currentPin, user.pinHash)) {
+      throw unauthorized("رمز PIN الحالي غير صحيح");
+    }
+    await prisma.user.update({ where: { id: req.params.id }, data: { pinHash: hashSecret(newPin) } });
+    res.json({ ok: true });
   })
 );

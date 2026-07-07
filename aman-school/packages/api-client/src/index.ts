@@ -75,6 +75,12 @@ export function createApiClient(config: ApiClientConfig) {
         http.get<Notification[]>(`/supervisor/${supervisorId}/notifications`),
       updateSettings: (supervisorId: string, body: Record<string, unknown>) =>
         http.put(`/supervisor/${supervisorId}/settings`, body),
+      changePin: (supervisorId: string, currentPin: string, newPin: string) =>
+        http.put<{ ok: true }>(`/supervisor/${supervisorId}/pin`, { currentPin, newPin }),
+    },
+
+    notifications: {
+      markRead: (id: string) => http.put(`/notifications/${id}/read`),
     },
 
     parent: {
@@ -100,6 +106,7 @@ export function createApiClient(config: ApiClientConfig) {
     },
 
     school: {
+      get: (schoolId: string) => http.get<School>(`/schools/${schoolId}`),
       dashboardSummary: (schoolId: string) => http.get(`/schools/${schoolId}/dashboard-summary`),
       students: (schoolId: string, query = "") => http.get<Student[]>(`/schools/${schoolId}/students${query}`),
       createStudent: (schoolId: string, body: Partial<Student>) =>

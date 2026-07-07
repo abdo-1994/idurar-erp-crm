@@ -29,7 +29,7 @@ export default function OwnerDashboardScreen() {
           { label: "إجمالي المدارس", value: data?.totalSchools },
           { label: "مدارس نشطة", value: data?.activeSchools },
           { label: "الطلاب النشطون", value: data?.totalStudents },
-          { label: "الإيراد الشهري", value: data ? `${data.monthlyRevenue} ر.س` : undefined },
+          { label: "الإيراد الشهري", value: data ? `${data.monthlyRevenue} ر.ي` : undefined },
         ].map((s) => (
           <Card key={s.label} style={styles.statCard}>
             <Text style={styles.statValue}>{s.value ?? "-"}</Text>

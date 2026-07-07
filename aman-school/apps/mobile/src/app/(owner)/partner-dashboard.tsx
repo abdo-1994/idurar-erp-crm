@@ -23,8 +23,8 @@ export default function PartnerDashboardScreen() {
       </Card>
       <Card>
         <View style={styles.row}><Text style={styles.label}>عدد المدارس</Text><Text style={styles.value}>{data?.schoolsCount ?? "-"}</Text></View>
-        <View style={styles.row}><Text style={styles.label}>الإيراد الشهري لمدارسه</Text><Text style={styles.value}>{data?.monthlyRevenue ?? "-"} ر.س</Text></View>
-        <View style={styles.row}><Text style={styles.label}>عمولته الشهرية</Text><Text style={styles.value}>{data?.commission ?? "-"} ر.س</Text></View>
+        <View style={styles.row}><Text style={styles.label}>الإيراد الشهري لمدارسه</Text><Text style={styles.value}>{data?.monthlyRevenue ?? "-"} ر.ي</Text></View>
+        <View style={styles.row}><Text style={styles.label}>عمولته الشهرية</Text><Text style={styles.value}>{data?.commission ?? "-"} ر.ي</Text></View>
       </Card>
     </ScreenContainer>
   );

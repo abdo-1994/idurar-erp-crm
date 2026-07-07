@@ -11,6 +11,17 @@ import { nextStudentCode } from "./students.routes";
 export const schoolsRouter = Router();
 schoolsRouter.use(authenticate);
 
+/* ---- SCH-11: fetch current school info (prefills the settings form) ---- */
+schoolsRouter.get(
+  "/schools/:id",
+  asyncHandler(async (req, res) => {
+    assertSchoolAccess(req.user!, req.params.id);
+    const school = await prisma.school.findUnique({ where: { id: req.params.id }, include: { package: true } });
+    if (!school) throw notFound("School");
+    res.json(school);
+  })
+);
+
 /* ---- SCH-02: dashboard summary ---- */
 schoolsRouter.get(
   "/schools/:id/dashboard-summary",

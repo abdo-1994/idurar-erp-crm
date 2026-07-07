@@ -12,8 +12,8 @@ export default function RevenueScreen() {
   return (
     <ScreenContainer>
       <Card accentColor={colors.purpleMid}>
-        <View style={styles.row}><Text style={styles.label}>الإيراد الشهري</Text><Text style={styles.value}>{data?.monthlyRevenue ?? "-"} ر.س</Text></View>
-        <View style={styles.row}><Text style={styles.label}>الإيراد السنوي المقدّر</Text><Text style={styles.value}>{data?.annualRevenue ?? "-"} ر.س</Text></View>
+        <View style={styles.row}><Text style={styles.label}>الإيراد الشهري</Text><Text style={styles.value}>{data?.monthlyRevenue ?? "-"} ر.ي</Text></View>
+        <View style={styles.row}><Text style={styles.label}>الإيراد السنوي المقدّر</Text><Text style={styles.value}>{data?.annualRevenue ?? "-"} ر.ي</Text></View>
         <View style={styles.row}><Text style={styles.label}>المدارس النشطة</Text><Text style={styles.value}>{data?.activeSchools ?? "-"}</Text></View>
       </Card>
     </ScreenContainer>
