@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { Card, ScreenContainer, SubscriptionBanner, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -10,10 +10,14 @@ const LINKS = [
   { href: "/(school)/parents", label: "أولياء الأمور", icon: "👨‍👩‍👦" },
   { href: "/(school)/buses", label: "الباصات", icon: "🚌" },
   { href: "/(school)/supervisors", label: "المشرفون", icon: "👮" },
+  { href: "/(school)/drivers", label: "السائقون", icon: "🚌" },
+  { href: "/(school)/calendar", label: "التقويم والعطل", icon: "📅" },
   { href: "/(school)/live-trips", label: "الرحلات المباشرة", icon: "🗺️" },
   { href: "/(school)/reports", label: "التقارير", icon: "📊" },
   { href: "/(school)/alerts", label: "التنبيهات", icon: "🔔" },
   { href: "/(school)/routes", label: "المسارات", icon: "🛣️" },
+  { href: "/(school)/invoices", label: "الفواتير", icon: "🧾" },
+  { href: "/(school)/payment-status", label: "حالة الدفع", icon: "💳" },
   { href: "/(school)/settings", label: "الإعدادات", icon: "⚙️" },
 ];
 
@@ -27,9 +31,12 @@ export default function SchoolDashboardScreen() {
       studentsOnTheWay: number; totalStudents: number; totalBuses: number;
     }>,
   });
+  const { data: school } = useQuery({ queryKey: ["school-info", schoolId], queryFn: () => api.school.get(schoolId) as Promise<any> });
 
   return (
     <ScreenContainer>
+      <SubscriptionBanner status={school?.subscriptionStatus} endsAt={school?.subscriptionEndsAt} gracePeriodEndsAt={school?.gracePeriodEndsAt} />
+
       <View style={styles.statsGrid}>
         {[
           { label: "رحلات نشطة", value: data?.activeTripsCount },

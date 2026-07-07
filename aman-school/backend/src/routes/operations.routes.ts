@@ -76,6 +76,39 @@ operationsRouter.put(
   })
 );
 
+/* ---- SF-9 / o-not-collected: escalated student-not-collected incidents ---- */
+operationsRouter.get(
+  "/operations/not-collected",
+  asyncHandler(async (req, res) => {
+    const alerts = await prisma.alert.findMany({
+      where: { type: "student_not_collected", status: "active", ...scopeFilter(req.user!) },
+      include: { bus: true, trip: true },
+      orderBy: { createdAt: "asc" },
+    });
+    res.json(alerts);
+  })
+);
+
+operationsRouter.post(
+  "/operations/not-collected/:id/instruct",
+  asyncHandler(async (req, res) => {
+    const alert = await loadAlert(req.params.id);
+    assertSchoolAccess(req.user!, alert.schoolId);
+    const { instruction } = req.body ?? {};
+    if (!instruction) throw badRequest("instruction is required");
+    if (!alert.busId) throw badRequest("This incident has no associated bus");
+
+    const bus = await prisma.bus.findUnique({ where: { id: alert.busId } });
+    if (!bus?.supervisorId) throw badRequest("No supervisor assigned to this bus");
+
+    const record = await prisma.operationsMessage.create({
+      data: { fromUserId: req.user!.sub, toUserId: bus.supervisorId, message: instruction, channel: "app" },
+    });
+    await prisma.incidentAction.create({ data: { alertId: alert.id, userId: req.user!.sub, note: `تعليمة: ${instruction}` } });
+    res.status(201).json(record);
+  })
+);
+
 /* ---- O-5: incidents list (all alerts, any status, with resolution summary) ---- */
 operationsRouter.get(
   "/incidents",

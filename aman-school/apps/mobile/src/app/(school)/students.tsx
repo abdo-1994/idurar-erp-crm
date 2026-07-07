@@ -34,6 +34,9 @@ export default function StudentsScreen() {
     <ScreenContainer>
       <TextInput style={styles.search} value={query} onChangeText={setQuery} placeholder="بحث بالاسم أو الكود" />
 
+      <Button title="📥 استيراد دفعة من Excel" variant="outline" onPress={() => router.push("/(school)/import-students")} />
+      <View style={{ height: 10 }} />
+
       <FlatList
         data={students}
         keyExtractor={(s) => s.id}

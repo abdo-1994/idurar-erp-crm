@@ -45,6 +45,11 @@ export default function ControlRoomScreen() {
           <Text style={styles.linkTitle}>📋 سجل الحوادث</Text>
         </Card>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(operations)/not-collected")}>
+        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.red}>
+          <Text style={styles.linkTitle}>🚨 حالات عدم استلام الطلاب</Text>
+        </Card>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/(operations)/profile")}>
         <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.purpleMid}>
           <Text style={styles.linkTitle}>👤 حسابي</Text>

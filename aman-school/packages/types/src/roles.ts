@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** The 7-level user hierarchy from docs/architecture/00-overview.md */
+/** The 8-level user hierarchy from docs/architecture/00-overview.md (v3.1 adds `driver`) */
 export const RoleSchema = z.enum([
   "owner",
   "sysadmin",
@@ -9,6 +9,7 @@ export const RoleSchema = z.enum([
   "ops_room",
   "supervisor",
   "parent",
+  "driver",
 ]);
 export type Role = z.infer<typeof RoleSchema>;
 
@@ -20,6 +21,7 @@ export const ROLE_LABELS_AR: Record<Role, string> = {
   ops_room: "غرفة العمليات",
   supervisor: "المشرف",
   parent: "ولي الأمر",
+  driver: "السائق",
 };
 
 /** JWT payload shape, see docs/architecture/01-multi-tenant-design.md */

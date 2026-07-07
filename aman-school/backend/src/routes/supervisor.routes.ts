@@ -4,9 +4,23 @@ import { asyncHandler } from "../lib/asyncHandler";
 import { authenticate, requireRole } from "../auth/middleware";
 import { badRequest, notFound, unauthorized } from "../lib/errors";
 import { compareSecret, hashSecret } from "../lib/password";
+import { toUserDto } from "../lib/dto";
+import { supervisorRatingAverage } from "./trips.routes";
 
 export const supervisorRouter = Router();
 supervisorRouter.use(authenticate);
+
+/* ---- S-15 / s-profile: supervisor profile + rolling safety rating ---- */
+supervisorRouter.get(
+  "/supervisor/:id/profile",
+  requireRole("supervisor"),
+  asyncHandler(async (req, res) => {
+    const user = await prisma.user.findUnique({ where: { id: req.params.id }, include: { supervisedBus: true } });
+    if (!user) throw notFound("Supervisor");
+    const rating = await supervisorRatingAverage(user.id);
+    res.json({ ...toUserDto(user), supervisedBus: user.supervisedBus, rating });
+  })
+);
 
 /* ---- S-02: today's trips for the calling supervisor's bus ---- */
 supervisorRouter.get(

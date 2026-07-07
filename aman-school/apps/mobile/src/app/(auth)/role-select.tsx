@@ -11,6 +11,7 @@ const ROLE_ROUTES: Record<Role, string> = {
   owner: "/(auth)/owner-login",
   sysadmin: "/(auth)/sysadmin-login",
   partner: "/(auth)/partner-login",
+  driver: "/(auth)/driver-login",
 };
 
 const ROLE_ICONS: Record<Role, string> = {
@@ -21,6 +22,7 @@ const ROLE_ICONS: Record<Role, string> = {
   owner: "👑",
   sysadmin: "🛠️",
   partner: "🤝",
+  driver: "🚌",
 };
 
 export default function RoleSelectScreen() {

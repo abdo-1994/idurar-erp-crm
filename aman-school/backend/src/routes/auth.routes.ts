@@ -42,6 +42,38 @@ authRouter.post(
   })
 );
 
+/* ---------------- Driver: employeeCode + PIN (OP-2) ---------------- */
+
+authRouter.post(
+  "/auth/driver/login",
+  asyncHandler(async (req, res) => {
+    const { employeeCode } = req.body ?? {};
+    if (!employeeCode) throw badRequest("employeeCode is required");
+    const user = await prisma.user.findFirst({ where: { employeeCode, role: "driver" } });
+    if (!user) throw unauthorized("رمز موظف غير صحيح — employee code not found");
+    res.json({ ok: true });
+  })
+);
+
+authRouter.post(
+  "/auth/driver/pin-verify",
+  asyncHandler(async (req, res) => {
+    const { employeeCode, pin } = req.body ?? {};
+    if (!employeeCode || !pin) throw badRequest("employeeCode and pin are required");
+    const user = await prisma.user.findFirst({ where: { employeeCode, role: "driver" } });
+    if (!user || !user.pinHash || !compareSecret(pin, user.pinHash)) {
+      throw unauthorized("PIN خاطئ — incorrect PIN");
+    }
+    const tokens = await mintTokens({
+      userId: user.id,
+      role: user.role,
+      schoolId: user.schoolId,
+      partnerId: user.partnerId,
+    });
+    res.json({ ...tokens, user: toUserDto(user) });
+  })
+);
+
 /* ---------------- Parent: phone + OTP ---------------- */
 
 authRouter.post(

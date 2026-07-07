@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-export const SubscriptionStatusSchema = z.enum(["active", "suspended", "expired", "trial"]);
+export const SubscriptionStatusSchema = z.enum([
+  "active",
+  "suspended",
+  "expired",
+  "trial",
+  "grace_period",
+  "restricted",
+]);
 export type SubscriptionStatus = z.infer<typeof SubscriptionStatusSchema>;
 
 export const PackageSchema = z.object({
@@ -12,11 +19,24 @@ export const PackageSchema = z.object({
 });
 export type Package = z.infer<typeof PackageSchema>;
 
+export const PartnerTierNameSchema = z.enum(["silver", "gold"]);
+
+export const PartnerTierSchema = z.object({
+  id: z.string().uuid(),
+  name: PartnerTierNameSchema,
+  labelAr: z.string(),
+  commissionPercent: z.number(),
+  minActiveSchools: z.number(),
+});
+export type PartnerTier = z.infer<typeof PartnerTierSchema>;
+
 export const PartnerSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   region: z.string(),
   commissionPercent: z.number(),
+  tierId: z.string().uuid().nullable(),
+  autoTierUpgrade: z.boolean(),
   createdAt: z.string().datetime(),
 });
 export type Partner = z.infer<typeof PartnerSchema>;
@@ -27,9 +47,14 @@ export const SchoolSchema = z.object({
   name: z.string(),
   address: z.string().nullable(),
   logoUrl: z.string().nullable(),
+  licenseNumber: z.string().nullable(),
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
   packageId: z.string().uuid().nullable(),
   partnerId: z.string().uuid().nullable(),
   subscriptionStatus: SubscriptionStatusSchema,
+  subscriptionEndsAt: z.string().datetime().nullable(),
+  gracePeriodEndsAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
 });
 export type School = z.infer<typeof SchoolSchema>;
@@ -41,6 +66,7 @@ export const StopSchema = z.object({
   name: z.string(),
   lat: z.number(),
   lng: z.number(),
+  radius: z.number(), // geofence radius in meters
 });
 export type Stop = z.infer<typeof StopSchema>;
 
@@ -48,6 +74,8 @@ export const RouteSchema = z.object({
   id: z.string().uuid(),
   schoolId: z.string().uuid(),
   busId: z.string().uuid(),
+  polyline: z.array(z.object({ lat: z.number(), lng: z.number() })).nullable(),
+  deviationSensitivity: z.enum(["low", "medium", "high"]),
   stops: z.array(StopSchema),
 });
 export type RouteEntity = z.infer<typeof RouteSchema>;
@@ -59,11 +87,17 @@ export const BusSchema = z.object({
   plateNumber: z.string(),
   capacity: z.number(),
   supervisorId: z.string().uuid().nullable(),
+  driverId: z.string().uuid().nullable(),
   gpsDeviceId: z.string().nullable(),
+  outOfService: z.boolean(),
+  outOfServiceReason: z.string().nullable(),
+  lastMaintenanceAt: z.string().datetime().nullable(),
+  inspectionExpiresAt: z.string().datetime().nullable(),
+  insuranceExpiresAt: z.string().datetime().nullable(),
 });
 export type Bus = z.infer<typeof BusSchema>;
 
-export const StudentStatusSchema = z.enum(["active", "suspended"]);
+export const StudentStatusSchema = z.enum(["active", "suspended", "withdrawn", "graduated", "archived"]);
 
 export const StudentSchema = z.object({
   id: z.string().uuid(),
@@ -75,23 +109,30 @@ export const StudentSchema = z.object({
   busId: z.string().uuid().nullable(),
   stopId: z.string().uuid().nullable(),
   status: StudentStatusSchema,
+  nfcRevoked: z.boolean(),
+  nfcRevokedAt: z.string().datetime().nullable(),
+  nfcRevokedReason: z.string().nullable(),
 });
 export type Student = z.infer<typeof StudentSchema>;
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
-  role: z.enum(["owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent"]),
+  role: z.enum(["owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent", "driver"]),
   name: z.string(),
   phone: z.string().nullable(),
   email: z.string().email().nullable(),
   schoolId: z.string().uuid().nullable(),
   partnerId: z.string().uuid().nullable(),
-  employeeCode: z.string().nullable(), // supervisor login
+  employeeCode: z.string().nullable(), // supervisor/driver login
+  licenseNumber: z.string().nullable().optional(),
+  licenseExpiresAt: z.string().datetime().nullable().optional(),
+  yearsExperience: z.number().nullable().optional(),
 });
 export type User = z.infer<typeof UserSchema>;
 
 export const TripDirectionSchema = z.enum(["to_school", "to_home"]);
 export const TripStatusSchema = z.enum(["scheduled", "active", "completed", "cancelled"]);
+export const TripShiftSchema = z.enum(["morning", "evening"]);
 
 export const TripSchema = z.object({
   id: z.string().uuid(),
@@ -99,6 +140,7 @@ export const TripSchema = z.object({
   busId: z.string().uuid(),
   supervisorId: z.string().uuid().nullable(),
   direction: TripDirectionSchema,
+  shift: TripShiftSchema,
   status: TripStatusSchema,
   scheduledAt: z.string().datetime(),
   startedAt: z.string().datetime().nullable(),
@@ -120,9 +162,27 @@ export const TripEventSchema = z.object({
 });
 export type TripEvent = z.infer<typeof TripEventSchema>;
 
+export const TripRatingSchema = z.object({
+  id: z.string().uuid(),
+  tripId: z.string().uuid(),
+  parentUserId: z.string().uuid(),
+  stars: z.number().min(1).max(5),
+  note: z.string().nullable(),
+  createdAt: z.string().datetime(),
+});
+export type TripRating = z.infer<typeof TripRatingSchema>;
+
 export const AlertPrioritySchema = z.enum(["urgent_critical", "urgent", "notice"]);
 export const AlertStatusSchema = z.enum(["active", "acknowledged", "resolved"]);
-export const AlertTypeSchema = z.enum(["sos", "delay", "incident", "exception"]);
+export const AlertTypeSchema = z.enum([
+  "sos",
+  "delay",
+  "incident",
+  "exception",
+  "student_not_collected",
+  "route_deviation",
+  "maintenance_due",
+]);
 
 export const AlertSchema = z.object({
   id: z.string().uuid(),
@@ -182,6 +242,41 @@ export const PaymentSchema = z.object({
 });
 export type Payment = z.infer<typeof PaymentSchema>;
 
+export const RefundStatusSchema = z.enum(["pending", "approved", "rejected"]);
+
+export const RefundSchema = z.object({
+  id: z.string().uuid(),
+  subjectType: PaymentSubjectTypeSchema,
+  schoolId: z.string().uuid().nullable(),
+  parentUserId: z.string().uuid().nullable(),
+  reason: z.string(),
+  amountPaid: z.number(),
+  amountOwed: z.number(),
+  refundAmount: z.number(),
+  status: RefundStatusSchema,
+  method: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  resolvedAt: z.string().datetime().nullable(),
+});
+export type Refund = z.infer<typeof RefundSchema>;
+
+export const InvoiceSchema = z.object({
+  id: z.string().uuid(),
+  invoiceNumber: z.string(),
+  schoolId: z.string().uuid(),
+  subjectType: PaymentSubjectTypeSchema,
+  parentUserId: z.string().uuid().nullable(),
+  amount: z.number(),
+  description: z.string().nullable(),
+  status: z.enum(["paid", "unpaid"]),
+  method: z.string().nullable(),
+  pdfUrl: z.string().nullable(),
+  issuedAt: z.string().datetime(),
+  dueAt: z.string().datetime(),
+  paidAt: z.string().datetime().nullable(),
+});
+export type Invoice = z.infer<typeof InvoiceSchema>;
+
 /** Canonical Yemen pricing (YER) — single source of truth for both parent-level
  * and school-level subscription tiers, per the v3.0 spec. */
 export const PARENT_PACKAGE_TIERS = [
@@ -205,6 +300,12 @@ export const SCHOOL_PACKAGE_TIERS = [
   { tier: "full", name: "شامل", priceMonthly: 80000, buses: null, students: null },
 ] as const;
 
+/** BC-8 — formal partner commission tiers, replacing implicit per-partner percentages. */
+export const PARTNER_TIERS = [
+  { name: "silver", labelAr: "الشريك الفضي", commissionPercent: 10, minActiveSchools: 1 },
+  { name: "gold", labelAr: "الشريك الذهبي", commissionPercent: 15, minActiveSchools: 3 },
+] as const;
+
 export const YEMEN_EMERGENCY_NUMBERS = {
   ambulance: "191",
   police: "194",
@@ -212,3 +313,99 @@ export const YEMEN_EMERGENCY_NUMBERS = {
   civilDefense: "191",
   redCrescent: "194",
 } as const;
+
+/* ---- v3.1 Phase 1: student safety ---- */
+
+export const ConsentSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  trackingConsent: z.boolean(),
+  medicalConsent: z.boolean(),
+  policyConsent: z.boolean(),
+  consentVersion: z.string(),
+  createdAt: z.string().datetime(),
+});
+export type Consent = z.infer<typeof ConsentSchema>;
+
+/** Current consent policy version — bumping this re-shows the consent screen
+ * to every previously-consented user on next login (see consent.routes.ts). */
+export const CURRENT_CONSENT_VERSION = "2026-07-v1";
+
+export const MedicalProfileSchema = z.object({
+  id: z.string().uuid(),
+  studentId: z.string().uuid(),
+  bloodType: z.string().nullable(),
+  allergies: z.array(z.string()),
+  medications: z.array(z.string()),
+  chronicConditions: z.string().nullable(),
+  emergencyContactName: z.string(),
+  emergencyContactPhone: z.string(),
+  doctorName: z.string().nullable(),
+  updatedAt: z.string().datetime(),
+});
+export type MedicalProfile = z.infer<typeof MedicalProfileSchema>;
+
+export const DelegateTypeSchema = z.enum(["single_day", "period", "permanent"]);
+export const DelegateStatusSchema = z.enum(["active", "expired", "cancelled"]);
+
+export const DelegateSchema = z.object({
+  id: z.string().uuid(),
+  studentId: z.string().uuid(),
+  type: DelegateTypeSchema,
+  fromDate: z.string().datetime().nullable(),
+  toDate: z.string().datetime().nullable(),
+  name: z.string(),
+  nationalId: z.string(),
+  relation: z.string(),
+  phone: z.string(),
+  photoUrl: z.string().nullable(),
+  status: DelegateStatusSchema,
+  createdAt: z.string().datetime(),
+});
+export type Delegate = z.infer<typeof DelegateSchema>;
+
+export const MedicalAccessLogSchema = z.object({
+  id: z.string().uuid(),
+  studentId: z.string().uuid(),
+  supervisorId: z.string().uuid(),
+  tripId: z.string().uuid().nullable(),
+  createdAt: z.string().datetime(),
+});
+export type MedicalAccessLog = z.infer<typeof MedicalAccessLogSchema>;
+
+/* ---- v3.1 Phase 3: operations ---- */
+
+export const HolidaySchema = z.object({
+  id: z.string().uuid(),
+  schoolId: z.string().uuid(),
+  date: z.string().datetime(),
+  reason: z.string(),
+  scope: z.enum(["all", "morning", "evening"]),
+  createdAt: z.string().datetime(),
+});
+export type Holiday = z.infer<typeof HolidaySchema>;
+
+export const AbsenceSchema = z.object({
+  id: z.string().uuid(),
+  studentId: z.string().uuid(),
+  fromDate: z.string().datetime(),
+  toDate: z.string().datetime(),
+  reason: z.string().nullable(),
+  status: z.enum(["active", "cancelled"]),
+  createdAt: z.string().datetime(),
+});
+export type Absence = z.infer<typeof AbsenceSchema>;
+
+export const MaintenanceTypeSchema = z.enum(["routine", "emergency"]);
+
+export const MaintenanceRecordSchema = z.object({
+  id: z.string().uuid(),
+  busId: z.string().uuid(),
+  type: MaintenanceTypeSchema,
+  cost: z.number().nullable(),
+  workshop: z.string().nullable(),
+  notes: z.string().nullable(),
+  date: z.string().datetime(),
+  createdAt: z.string().datetime(),
+});
+export type MaintenanceRecord = z.infer<typeof MaintenanceRecordSchema>;

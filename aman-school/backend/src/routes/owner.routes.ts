@@ -52,6 +52,58 @@ ownerRouter.get(
   })
 );
 
+/* ---- BC-1 / ow-onboarding: 5-step new-school wizard, submitted as one call
+ * once the client has walked through every step (each step's fields folded
+ * into a single payload) — provisions school + admin + subscription
+ * atomically, matching the wizard's step 5 "confirm and launch". ---- */
+ownerRouter.post(
+  "/owner/schools/onboard",
+  asyncHandler(async (req, res) => {
+    const {
+      name, slug, address, region, licenseNumber, phone, email,
+      adminName, adminEmail, packageId, partnerId, contractCycle,
+    } = req.body ?? {};
+    if (!name || !slug || !adminName || !adminEmail || !packageId) {
+      throw badRequest("name, slug, adminName, adminEmail and packageId are required");
+    }
+    if (licenseNumber) {
+      const existing = await prisma.school.findUnique({ where: { licenseNumber } });
+      if (existing) throw badRequest("رقم الترخيص مُستخدم مسبقاً لمدرسة أخرى");
+    }
+    const existingAdmin = await prisma.user.findFirst({ where: { email: adminEmail } });
+    if (existingAdmin) throw badRequest("البريد الإلكتروني للمدير مُستخدم في حساب آخر");
+
+    const cycleDays = contractCycle === "yearly" ? 365 : 30;
+    const subscriptionEndsAt = new Date(Date.now() + cycleDays * 86400000);
+
+    const school = await prisma.school.create({
+      data: {
+        name, slug, address: address ?? region ?? null, licenseNumber: licenseNumber ?? null,
+        phone: phone ?? null, email: email ?? null, packageId, partnerId: partnerId ?? null,
+        subscriptionStatus: "active", subscriptionEndsAt,
+      },
+    });
+
+    const tempPassword = Math.random().toString(36).slice(2, 10);
+    const admin = await prisma.user.create({
+      data: {
+        role: "school_admin",
+        name: adminName,
+        email: adminEmail,
+        schoolId: school.id,
+        passwordHash: hashSecret(tempPassword),
+      },
+    });
+
+    // No email/SMS provider wired up in this dev environment — log the
+    // credentials that would otherwise be sent to the new school admin.
+    console.log(`[dev-email] School admin credentials for ${adminEmail}: password=${tempPassword}`);
+
+    res.status(201).json({ school, admin: { id: admin.id, email: admin.email }, devTempPassword: tempPassword });
+  })
+);
+
+// Kept for backwards-compatibility with the original single-step registration flow.
 ownerRouter.post(
   "/owner/schools/register",
   asyncHandler(async (req, res) => {
@@ -75,8 +127,6 @@ ownerRouter.post(
       },
     });
 
-    // No email provider wired up in this dev environment — log the credentials
-    // that would otherwise be emailed to the new school admin (see OWN-02 notes).
     console.log(`[dev-email] School admin credentials for ${adminEmail}: password=${tempPassword}`);
 
     res.status(201).json({ school, admin: { id: admin.id, email: admin.email }, devTempPassword: tempPassword });
@@ -99,7 +149,8 @@ ownerRouter.get(
 ownerRouter.get(
   "/owner/partners",
   asyncHandler(async (_req, res) => {
-    const partners = await prisma.partner.findMany({ include: { schools: true } });
+    await applyAutoTierUpgrades();
+    const partners = await prisma.partner.findMany({ include: { schools: true, tier: true } });
     res.json(partners);
   })
 );
@@ -122,6 +173,46 @@ ownerRouter.put(
     res.json(updated);
   })
 );
+
+/* ---- BC-8 / ow-partner-tiers ---- */
+ownerRouter.get(
+  "/owner/partner-tiers",
+  asyncHandler(async (_req, res) => {
+    res.json(await prisma.partnerTier.findMany({ orderBy: { minActiveSchools: "asc" } }));
+  })
+);
+
+ownerRouter.put(
+  "/owner/partner-tiers/:id",
+  asyncHandler(async (req, res) => {
+    const { commissionPercent, minActiveSchools } = req.body ?? {};
+    const updated = await prisma.partnerTier.update({
+      where: { id: req.params.id },
+      data: { commissionPercent, minActiveSchools },
+    });
+    res.json(updated);
+  })
+);
+
+/** Nightly-cron equivalent: promote/demote every auto-upgrade partner based on
+ * their current count of active schools. Called lazily by GET /owner/partners
+ * since this build has no real scheduler (see docs/architecture). */
+async function applyAutoTierUpgrades() {
+  const [partners, tiers] = await Promise.all([
+    prisma.partner.findMany({ where: { autoTierUpgrade: true }, include: { schools: true } }),
+    prisma.partnerTier.findMany({ orderBy: { minActiveSchools: "desc" } }),
+  ]);
+  for (const partner of partners) {
+    const activeSchools = partner.schools.filter((s) => s.subscriptionStatus === "active").length;
+    const eligibleTier = tiers.find((t) => activeSchools >= t.minActiveSchools);
+    if (eligibleTier && eligibleTier.id !== partner.tierId) {
+      await prisma.partner.update({
+        where: { id: partner.id },
+        data: { tierId: eligibleTier.id, commissionPercent: eligibleTier.commissionPercent },
+      });
+    }
+  }
+}
 
 /* ---- OWN-05: packages ---- */
 ownerRouter.get(
@@ -167,6 +258,27 @@ ownerRouter.get(
   "/owner/invoices",
   asyncHandler(async (_req, res) => {
     res.json(await prisma.invoice.findMany({ include: { school: true }, orderBy: { issuedAt: "desc" } }));
+  })
+);
+
+/* ---- BC-5 / ow-refunds ---- */
+ownerRouter.get(
+  "/owner/refunds",
+  asyncHandler(async (_req, res) => {
+    res.json(await prisma.refund.findMany({ include: { school: true }, orderBy: { createdAt: "desc" } }));
+  })
+);
+
+ownerRouter.put(
+  "/owner/refunds/:id",
+  asyncHandler(async (req, res) => {
+    const { status, refundAmount } = req.body ?? {};
+    if (!["approved", "rejected"].includes(status)) throw badRequest("status must be approved or rejected");
+    const updated = await prisma.refund.update({
+      where: { id: req.params.id },
+      data: { status, refundAmount: refundAmount ?? undefined, resolvedAt: new Date() },
+    });
+    res.json(updated);
   })
 );
 

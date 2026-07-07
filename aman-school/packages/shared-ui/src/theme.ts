@@ -41,6 +41,7 @@ export const roleColors = {
   ops_room: colors.redMid,
   supervisor: colors.blueMid,
   parent: colors.greenMid,
+  driver: colors.tealMid,
 } as const;
 
 export const spacing = (n: number) => n * 4;

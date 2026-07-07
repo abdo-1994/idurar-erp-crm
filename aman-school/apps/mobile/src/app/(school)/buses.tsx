@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, FlatList } from "react-native";
+import { Text, TextInput, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
 export default function BusesScreen() {
+  const router = useRouter();
   const schoolId = useSessionStore((s) => s.user?.schoolId)!;
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
@@ -32,13 +34,18 @@ export default function BusesScreen() {
         keyExtractor={(b) => b.id}
         scrollEnabled={false}
         renderItem={({ item }) => (
-          <Card accentColor={colors.amber}>
-            <View style={styles.row}>
-              <Text style={styles.name}>باص {item.busNumber}</Text>
-              <StatusPill label={item.gpsActive ? "GPS نشط" : "غير نشط"} tone={item.gpsActive ? "success" : "neutral"} />
-            </View>
-            <Text style={styles.meta}>{item.plateNumber} · السعة {item.capacity}</Text>
-          </Card>
+          <TouchableOpacity onPress={() => router.push(`/(school)/bus/${item.id}`)}>
+            <Card accentColor={colors.amber}>
+              <View style={styles.row}>
+                <Text style={styles.name}>باص {item.busNumber}</Text>
+                <StatusPill
+                  label={(item as any).outOfService ? "خارج الخدمة" : item.gpsActive ? "GPS نشط" : "غير نشط"}
+                  tone={(item as any).outOfService ? "danger" : item.gpsActive ? "success" : "neutral"}
+                />
+              </View>
+              <Text style={styles.meta}>{item.plateNumber} · السعة {item.capacity}</Text>
+            </Card>
+          </TouchableOpacity>
         )}
       />
 

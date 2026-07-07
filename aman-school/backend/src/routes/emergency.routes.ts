@@ -12,7 +12,7 @@ emergencyRouter.use(authenticate);
  * since there's no real SMS gateway in this environment — see notes below). */
 emergencyRouter.post(
   "/emergency/sos",
-  requireRole("supervisor", "parent"),
+  requireRole("supervisor", "parent", "driver"),
   asyncHandler(async (req, res) => {
     const { tripId, lat, lng, description } = req.body ?? {};
     if (lat == null || lng == null) throw badRequest("lat and lng are required");

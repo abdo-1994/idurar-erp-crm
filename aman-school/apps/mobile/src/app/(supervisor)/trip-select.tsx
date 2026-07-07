@@ -6,6 +6,7 @@ import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
 
 const DIRECTION_LABEL: Record<string, string> = { to_school: "ذهاب إلى المدرسة", to_home: "عودة إلى المنزل" };
+const SHIFT_LABEL: Record<string, string> = { morning: "🌅 صباحية", evening: "🌇 مسائية" };
 const STATUS_TONE: Record<string, "info" | "success" | "warning" | "neutral"> = {
   scheduled: "info",
   active: "warning",
@@ -46,6 +47,7 @@ export default function TripSelectScreen() {
                 <Text style={styles.direction}>{DIRECTION_LABEL[item.direction] ?? item.direction}</Text>
                 <StatusPill label={STATUS_LABEL[item.status] ?? item.status} tone={STATUS_TONE[item.status] ?? "neutral"} />
               </View>
+              <Text style={styles.shiftLabel}>{SHIFT_LABEL[(item as any).shift] ?? ""}</Text>
               <Text style={styles.time}>{new Date(item.scheduledAt).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</Text>
               <Button title="اختر هذه الرحلة" onPress={() => selectTrip(item.id, item.status)} color={colors.blueMid} />
             </Card>
@@ -62,5 +64,6 @@ const styles = StyleSheet.create({
   muted: { color: colors.gray600, textAlign: "center" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   direction: { fontWeight: "700", color: colors.navy, fontSize: 14 },
+  shiftLabel: { color: colors.blueMid, fontSize: 11, fontWeight: "700", marginBottom: 2 },
   time: { color: colors.gray600, fontSize: 12, marginBottom: 10 },
 });

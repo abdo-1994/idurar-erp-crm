@@ -1,14 +1,6 @@
 import { Redirect } from "expo-router";
 import { useSessionStore } from "../store/session";
-
-const ROLE_HOME: Record<string, string> = {
-  supervisor: "/(supervisor)/trip-select",
-  parent: "/(parent)/home",
-  school_admin: "/(school)/dashboard",
-  ops_room: "/(operations)/control-room",
-  owner: "/(owner)/dashboard",
-  partner: "/(owner)/partner-dashboard",
-};
+import { ROLE_HOME } from "../features/shared/roleHome";
 
 export default function Index() {
   const user = useSessionStore((s) => s.user);

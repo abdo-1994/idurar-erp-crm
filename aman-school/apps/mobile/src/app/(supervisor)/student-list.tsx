@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, FlatList, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Card, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { HttpError } from "@aman-school/api-client";
 import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
 
@@ -24,8 +25,8 @@ export default function StudentListScreen() {
     try {
       await api.supervisor.startTrip(tripId);
       router.replace("/(supervisor)/scan");
-    } catch {
-      setError("تعذر بدء الرحلة — تحقق من GPS والاتصال");
+    } catch (e) {
+      setError(e instanceof HttpError ? String((e.body as any)?.error ?? "تعذر بدء الرحلة") : "تعذر بدء الرحلة — تحقق من GPS والاتصال");
     } finally {
       setStarting(false);
     }

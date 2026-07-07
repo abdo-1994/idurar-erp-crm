@@ -33,6 +33,7 @@ export default function OperationsLayout() {
         <Stack.Screen name="alerts" options={{ title: "إدارة التنبيهات" }} />
         <Stack.Screen name="incidents" options={{ title: "سجل الحوادث" }} />
         <Stack.Screen name="incident/[id]" options={{ title: "تفاصيل الحادثة" }} />
+        <Stack.Screen name="not-collected" options={{ title: "حالات عدم استلام الطلاب" }} />
         <Stack.Screen name="communications" options={{ title: "التواصل" }} />
         <Stack.Screen name="daily-report" options={{ title: "تقرير اليوم" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />

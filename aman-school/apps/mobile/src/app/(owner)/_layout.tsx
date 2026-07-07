@@ -31,10 +31,14 @@ export default function OwnerLayout() {
       >
         <Stack.Screen name="dashboard" options={{ title: "لوحة المالك", headerRight: LogoutHeaderButton }} />
         <Stack.Screen name="schools" options={{ title: "إدارة المدارس" }} />
+        <Stack.Screen name="onboarding" options={{ title: "معالج إطلاق مدرسة جديدة" }} />
         <Stack.Screen name="school/[id]" options={{ title: "تفاصيل المدرسة" }} />
         <Stack.Screen name="partners" options={{ title: "إدارة الشركاء" }} />
         <Stack.Screen name="packages" options={{ title: "الباقات والاشتراكات" }} />
         <Stack.Screen name="revenue" options={{ title: "الإيرادات والفوترة" }} />
+        <Stack.Screen name="sub-lifecycle" options={{ title: "سياسة دورة حياة الاشتراك" }} />
+        <Stack.Screen name="refunds" options={{ title: "طلبات الاسترداد" }} />
+        <Stack.Screen name="partner-tiers" options={{ title: "مستويات عمولة الشركاء" }} />
         <Stack.Screen name="analytics" options={{ title: "تحليلات المنصة" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات النظام", headerRight: LogoutHeaderButton }} />
         <Stack.Screen name="partner-dashboard" options={{ title: "لوحة الشريك", headerRight: LogoutHeaderButton }} />
