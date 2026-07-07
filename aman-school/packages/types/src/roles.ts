@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-/** The 6-level user hierarchy from docs/architecture/00-overview.md */
+/** The 7-level user hierarchy from docs/architecture/00-overview.md */
 export const RoleSchema = z.enum([
   "owner",
+  "sysadmin",
   "partner",
   "school_admin",
   "ops_room",
@@ -13,6 +14,7 @@ export type Role = z.infer<typeof RoleSchema>;
 
 export const ROLE_LABELS_AR: Record<Role, string> = {
   owner: "مالك النظام",
+  sysadmin: "مدير النظام",
   partner: "الشريك",
   school_admin: "مدير المدرسة",
   ops_room: "غرفة العمليات",

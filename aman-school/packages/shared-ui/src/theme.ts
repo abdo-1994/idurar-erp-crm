@@ -35,6 +35,7 @@ export const colors = {
 /** Per-role accent color, matching the original design doc's app colors. */
 export const roleColors = {
   owner: colors.purpleMid,
+  sysadmin: colors.navy,
   partner: colors.orangeMid,
   school_admin: colors.amber,
   ops_room: colors.redMid,

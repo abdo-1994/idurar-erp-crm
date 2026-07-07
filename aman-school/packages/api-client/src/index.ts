@@ -13,6 +13,17 @@ import { ApiClientConfig, createHttp } from "./http";
 export { createSocket } from "./socket";
 export * from "./http";
 
+/** Bus + backend-only runtime telemetry fields (see backend/prisma/schema.prisma
+ * comment on the Bus model) — additive, never sent by the client, only read. */
+export type BusWithTelemetry = Bus & {
+  gpsActive: boolean;
+  currentLat: number | null;
+  currentLng: number | null;
+  currentSpeedKmh: number | null;
+  lastGpsAt: string | null;
+  route?: { id: string; stops: Array<{ id: string; order: number; name: string; lat: number; lng: number }> } | null;
+};
+
 export function createApiClient(config: ApiClientConfig) {
   const http = createHttp(config);
 
@@ -32,6 +43,12 @@ export function createApiClient(config: ApiClientConfig) {
         http.post<AuthResponse>("/auth/ops-room/login", { email, password }),
       ownerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/owner/login", { email, password }),
+      sysadminLogin: (email: string, password: string) =>
+        http.post<AuthResponse>("/auth/sysadmin/login", { email, password }),
+      partnerLogin: (email: string, password: string) =>
+        http.post<AuthResponse>("/auth/partner/login", { email, password }),
+      refresh: (refreshToken: string) => http.post<AuthResponse>("/auth/refresh", { refreshToken }),
+      logout: (refreshToken: string) => http.post<void>("/auth/logout", { refreshToken }),
     },
 
     supervisor: {
@@ -60,6 +77,12 @@ export function createApiClient(config: ApiClientConfig) {
         http.get<Notification[]>(`/supervisor/${supervisorId}/notifications`),
       updateSettings: (supervisorId: string, body: Record<string, unknown>) =>
         http.put(`/supervisor/${supervisorId}/settings`, body),
+      changePin: (supervisorId: string, currentPin: string, newPin: string) =>
+        http.put<{ ok: true }>(`/supervisor/${supervisorId}/pin`, { currentPin, newPin }),
+    },
+
+    notifications: {
+      markRead: (id: string) => http.put(`/notifications/${id}/read`),
     },
 
     parent: {
@@ -85,6 +108,7 @@ export function createApiClient(config: ApiClientConfig) {
     },
 
     school: {
+      get: (schoolId: string) => http.get<School>(`/schools/${schoolId}`),
       dashboardSummary: (schoolId: string) => http.get(`/schools/${schoolId}/dashboard-summary`),
       students: (schoolId: string, query = "") => http.get<Student[]>(`/schools/${schoolId}/students${query}`),
       createStudent: (schoolId: string, body: Partial<Student>) =>
@@ -93,8 +117,8 @@ export function createApiClient(config: ApiClientConfig) {
         http.put<Student>(`/students/${studentId}`, body),
       studentQrCode: (studentId: string) => http.get<{ qrDataUrl: string }>(`/students/${studentId}/qr-code`),
       student: (studentId: string) => http.get<Student>(`/students/${studentId}`),
-      buses: (schoolId: string) => http.get<Bus[]>(`/schools/${schoolId}/buses`),
-      createBus: (schoolId: string, body: Partial<Bus>) => http.post<Bus>(`/schools/${schoolId}/buses`, body),
+      buses: (schoolId: string) => http.get<BusWithTelemetry[]>(`/schools/${schoolId}/buses`),
+      createBus: (schoolId: string, body: Partial<Bus>) => http.post<BusWithTelemetry>(`/schools/${schoolId}/buses`, body),
       setBusGpsDevice: (busId: string, gpsDeviceId: string) =>
         http.put(`/buses/${busId}/gps-device`, { gpsDeviceId }),
       supervisors: (schoolId: string) => http.get<User[]>(`/schools/${schoolId}/supervisors`),
@@ -109,6 +133,8 @@ export function createApiClient(config: ApiClientConfig) {
         http.post(`/schools/${schoolId}/notifications/broadcast`, body),
       updateSettings: (schoolId: string, body: Partial<School>) =>
         http.put(`/schools/${schoolId}/settings`, body),
+      parents: (schoolId: string) => http.get(`/schools/${schoolId}/parents`),
+      payments: (schoolId: string) => http.get(`/schools/${schoolId}/payments`),
     },
 
     operations: {
@@ -117,6 +143,7 @@ export function createApiClient(config: ApiClientConfig) {
       acknowledgeAlert: (id: string, assignedToUserId?: string) =>
         http.put<Alert>(`/alerts/${id}/acknowledge`, { assignedToUserId }),
       resolveAlert: (id: string, reason: string) => http.put<Alert>(`/alerts/${id}/resolve`, { reason }),
+      incidents: () => http.get(`/incidents`),
       incident: (id: string) => http.get(`/incidents/${id}`),
       incidentAction: (id: string, body: { note: string }) => http.post(`/incidents/${id}/actions`, body),
       notifyParents: (id: string, body: { message: string }) =>
@@ -148,10 +175,43 @@ export function createApiClient(config: ApiClientConfig) {
       analytics: () => http.get(`/owner/analytics`),
       platformSettings: () => http.get(`/owner/platform-settings`),
       updatePlatformSettings: (body: Record<string, unknown>) => http.put(`/owner/platform-settings`, body),
+      users: (query = "") => http.get(`/owner/users${query}`),
+      notifications: () => http.get(`/owner/notifications`),
     },
 
     partner: {
       dashboard: (partnerId: string) => http.get(`/partners/${partnerId}/dashboard`),
+    },
+
+    sysadmin: {
+      dashboard: () => http.get(`/sysadmin/dashboard`),
+      users: (query = "") => http.get(`/sysadmin/users${query}`),
+      suspendUser: (id: string) => http.put(`/sysadmin/users/${id}/suspend`),
+      roles: () => http.get(`/sysadmin/roles`),
+      servers: () => http.get(`/sysadmin/servers`),
+      logs: (level?: string) => http.get(`/sysadmin/logs${level ? `?level=${level}` : ""}`),
+      backup: () => http.get(`/sysadmin/backup`),
+      security: () => http.get(`/sysadmin/security`),
+      config: () => http.get(`/sysadmin/config`),
+    },
+
+    subscriptions: {
+      catalog: (audience: "parent" | "school" = "parent") =>
+        http.get(`/packages/catalog?audience=${audience}`),
+      parentSubscription: (parentId: string) =>
+        http.get<{ tier: string | null; endsAt: string | null }>(`/parents/${parentId}/subscription`),
+      subscribeParent: (parentId: string, tier: string, cycle: string) =>
+        http.post(`/parents/${parentId}/subscription`, { tier, cycle }),
+      submitPayment: (body: {
+        subjectType: "parent" | "school";
+        subjectId: string;
+        packageName: string;
+        cycle: string;
+        amount: number;
+        method: string;
+        receiptUrl?: string;
+      }) => http.post(`/payments`, body),
+      parentPayments: (parentId: string) => http.get(`/parents/${parentId}/payments`),
     },
   };
 }

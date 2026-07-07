@@ -84,6 +84,27 @@ export const RegisterSchoolRequestSchema = z.object({
   partnerId: z.string().uuid().optional(),
 });
 
+/* ---- Subscriptions & payments (shared subscribe+payment flow) ---- */
+
+export const CreatePaymentRequestSchema = z.object({
+  subjectType: z.enum(["parent", "school"]),
+  subjectId: z.string().uuid(), // parentUserId or schoolId
+  packageName: z.string(),
+  cycle: z.enum(["monthly", "quarterly", "yearly"]),
+  amount: z.number(),
+  method: z.enum(["ecash", "bank_transfer", "cash", "yemenpay"]),
+  receiptUrl: z.string().optional(),
+});
+export type CreatePaymentRequest = z.infer<typeof CreatePaymentRequestSchema>;
+
+/* ---- System Administrator (sa-*) ---- */
+
+export const SysadminLoginRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+  otp: z.string().optional(),
+});
+
 export type BoardEventRequest = z.infer<typeof BoardEventRequestSchema>;
 export type SosRequest = z.infer<typeof SosRequestSchema>;
 export type LinkStudentRequest = z.infer<typeof LinkStudentRequestSchema>;
