@@ -40,6 +40,28 @@ export function createHttp(config: ApiClientConfig) {
     return (await res.json()) as T;
   }
 
+  /** Multipart upload — omits the JSON Content-Type so fetch/RN sets the
+   * correct multipart boundary header itself (BC-2 Excel import). */
+  async function upload<T>(path: string, form: FormData): Promise<T> {
+    const token = config.getAccessToken();
+    const res = await fetch(`${config.baseUrl}${path}`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (res.status === 401) config.onUnauthorized?.();
+    if (!res.ok) {
+      let body: unknown = undefined;
+      try {
+        body = await res.json();
+      } catch {
+        /* no JSON body */
+      }
+      throw new HttpError(res.status, body);
+    }
+    return (await res.json()) as T;
+  }
+
   return {
     get: <T>(path: string) => request<T>(path, { method: "GET" }),
     post: <T>(path: string, body?: unknown) =>
@@ -47,6 +69,7 @@ export function createHttp(config: ApiClientConfig) {
     put: <T>(path: string, body?: unknown) =>
       request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
     delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+    upload,
   };
 }
 

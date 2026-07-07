@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, FlatList, Alert } from "react-native";
+import { Text, TextInput, View, StyleSheet, FlatList, Alert, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, ScreenContainer, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
 export default function SupervisorsScreen() {
+  const router = useRouter();
   const schoolId = useSessionStore((s) => s.user?.schoolId)!;
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
@@ -37,10 +39,12 @@ export default function SupervisorsScreen() {
         keyExtractor={(s) => s.id}
         scrollEnabled={false}
         renderItem={({ item }) => (
-          <Card accentColor={colors.blueMid}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.meta}>{item.employeeCode} · {item.phone}</Text>
-          </Card>
+          <TouchableOpacity onPress={() => router.push(`/(school)/supervisor/${item.id}`)}>
+            <Card accentColor={colors.blueMid}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.meta}>{item.employeeCode} · {item.phone}{(item as any).busNumber ? ` · باص ${(item as any).busNumber}` : ""}</Text>
+            </Card>
+          </TouchableOpacity>
         )}
       />
 

@@ -25,6 +25,7 @@ enum Role {
   ops_room
   supervisor
   parent
+  driver
 }
 
 enum SubscriptionStatus {
@@ -32,11 +33,16 @@ enum SubscriptionStatus {
   suspended
   expired
   trial
+  grace_period
+  restricted
 }
 
 enum StudentStatus {
   active
   suspended
+  withdrawn
+  graduated
+  archived
 }
 
 enum TripDirection {
@@ -49,6 +55,11 @@ enum TripStatus {
   active
   completed
   cancelled
+}
+
+enum TripShift {
+  morning
+  evening
 }
 
 enum TripEventType {
@@ -78,6 +89,9 @@ enum AlertType {
   delay
   incident
   exception
+  student_not_collected
+  route_deviation
+  maintenance_due
 }
 
 model Package {
@@ -90,13 +104,35 @@ model Package {
   schools       School[]
 }
 
+enum PartnerTierName {
+  silver
+  gold
+}
+
+/// Formal partner commission tiers (BC-8 / ow-partner-tiers) — replaces the
+/// previously-implicit per-partner commissionPercent with a shared, named
+/// tier definition that can drive automatic promotion/demotion.
+model PartnerTier {
+  id                String          @id @default(uuid())
+  name              PartnerTierName @unique
+  labelAr           String
+  commissionPercent Float
+  minActiveSchools  Int
+  createdAt         DateTime        @default(now())
+
+  partners Partner[]
+}
+
 model Partner {
   id                String   @id @default(uuid())
   name              String
   region            String
   commissionPercent Float
+  tierId            String?
+  autoTierUpgrade   Boolean  @default(true)
   createdAt         DateTime @default(now())
 
+  tier  PartnerTier? @relation(fields: [tierId], references: [id])
   schools School[]
   users   User[]
 }
@@ -107,9 +143,16 @@ model School {
   name               String
   address            String?
   logoUrl            String?
+  licenseNumber      String?            @unique
+  phone              String?
+  email              String?
   packageId          String?
   partnerId          String?
   subscriptionStatus SubscriptionStatus @default(trial)
+  // Subscription lifecycle (BC-3/BC-4) — when the current billing period
+  // ends, and the computed end of the post-expiry grace window.
+  subscriptionEndsAt   DateTime?
+  gracePeriodEndsAt    DateTime?
   createdAt          DateTime           @default(now())
 
   package  Package? @relation(fields: [packageId], references: [id])
@@ -124,6 +167,8 @@ model School {
   invoices          Invoice[]
   studentParentLinks StudentParentLink[]
   payments          Payment[]
+  refunds           Refund[]
+  holidays          Holiday[]
 }
 
 model Stop {
@@ -133,6 +178,8 @@ model Stop {
   name    String
   lat     Float
   lng     Float
+  // Geofence radius in meters around this stop (a-route-editor / SF-8).
+  radius  Float  @default(150)
 
   route    Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
   students Student[]
@@ -144,6 +191,10 @@ model Route {
   id       String @id @default(uuid())
   schoolId String
   busId    String @unique
+  // Full path polyline as an ordered list of {lat,lng}, and how sensitive
+  // route-deviation detection is for this route (a-route-editor / SF-8).
+  polyline             Json?
+  deviationSensitivity String @default("medium") // low | medium | high
 
   school School @relation(fields: [schoolId], references: [id])
   bus    Bus    @relation(fields: [busId], references: [id])
@@ -159,6 +210,7 @@ model Bus {
   plateNumber  String
   capacity     Int
   supervisorId String?  @unique
+  driverId     String?  @unique
   gpsDeviceId  String?
 
   // Runtime/telemetry fields (not part of the shared Bus zod type, additive —
@@ -170,12 +222,21 @@ model Bus {
   currentSpeedKmh Float?
   lastGpsAt       DateTime?
 
+  // Fleet maintenance (OP-6 / a-maintenance)
+  outOfService        Boolean   @default(false)
+  outOfServiceReason   String?
+  lastMaintenanceAt    DateTime?
+  inspectionExpiresAt  DateTime?
+  insuranceExpiresAt   DateTime?
+
   school     School  @relation(fields: [schoolId], references: [id])
-  supervisor User?   @relation(fields: [supervisorId], references: [id])
+  supervisor User?   @relation("SupervisorBus", fields: [supervisorId], references: [id])
+  driver     User?   @relation("DriverBus", fields: [driverId], references: [id])
   route      Route?
   students   Student[]
   trips      Trip[]
   alerts     Alert[]
+  maintenanceRecords MaintenanceRecord[]
 
   @@index([schoolId])
 }
@@ -191,14 +252,108 @@ model Student {
   stopId   String?
   status   StudentStatus @default(active)
 
+  // NFC bracelet lifecycle (SF-4 / p-lost-nfc) — revoking makes the old
+  // physical tag permanently unusable even if it's later found.
+  nfcRevoked       Boolean   @default(false)
+  nfcRevokedAt     DateTime?
+  nfcRevokedReason String?
+
   school       School              @relation(fields: [schoolId], references: [id])
   bus          Bus?                @relation(fields: [busId], references: [id])
   stop         Stop?               @relation(fields: [stopId], references: [id])
   parentLinks  StudentParentLink[]
   tripEvents   TripEvent[]
+  medicalProfile    MedicalProfile?
+  delegates         Delegate[]
+  absences          Absence[]
+  medicalAccessLogs MedicalAccessLog[]
 
   @@index([schoolId])
   @@index([busId])
+}
+
+/// SF-2 / p-medical — sensitive medical data, readable by school_admin and
+/// ops_room always, and by a supervisor only via the audited s-medical-alert
+/// path (see MedicalAccessLog).
+model MedicalProfile {
+  id                     String   @id @default(uuid())
+  studentId              String   @unique
+  bloodType              String?
+  allergies              String[]
+  medications            String[]
+  chronicConditions      String?
+  emergencyContactName   String
+  emergencyContactPhone  String
+  doctorName             String?
+  updatedAt              DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+/// Audit trail for every time a supervisor opens a student's medical profile
+/// via the emergency-only s-medical-alert path (SF-7).
+model MedicalAccessLog {
+  id           String   @id @default(uuid())
+  studentId    String
+  supervisorId String
+  tripId       String?
+  createdAt    DateTime @default(now())
+
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  supervisor User    @relation(fields: [supervisorId], references: [id])
+
+  @@index([studentId])
+}
+
+enum DelegateType {
+  single_day
+  period
+  permanent
+}
+
+enum DelegateStatus {
+  active
+  expired
+  cancelled
+}
+
+/// SF-3 / p-delegate — an alternate pickup person a parent authorizes,
+/// verified by the supervisor's photo-match flow (s-verify-pickup).
+model Delegate {
+  id         String         @id @default(uuid())
+  studentId  String
+  type       DelegateType
+  fromDate   DateTime?
+  toDate     DateTime?
+  name       String
+  nationalId String
+  relation   String
+  phone      String
+  photoUrl   String?
+  status     DelegateStatus @default(active)
+  createdAt  DateTime       @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+/// SF-1 / consent — mandatory, once-per-account privacy/tracking/medical
+/// consent record. Never deleted (legal retention); "withdrawing" consent is
+/// modeled as a new record with all three flags false, which suspends the
+/// account (see consent.routes.ts).
+model Consent {
+  id               String   @id @default(uuid())
+  userId           String
+  trackingConsent  Boolean
+  medicalConsent   Boolean
+  policyConsent    Boolean
+  consentVersion   String
+  ip               String?
+  appVersion       String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
 }
 
 model User {
@@ -211,17 +366,22 @@ model User {
   partnerId      String?
   employeeCode   String?  @unique
   passwordHash   String? // school_admin / ops_room / owner / partner / sysadmin
-  pinHash        String? // supervisor
+  pinHash        String? // supervisor / driver
   notificationPrefs Json?
   // Parent-level subscription (P-6/subscribe+payment flow) — additive, only used for role=parent.
   subscriptionTier   String?
   subscriptionEndsAt DateTime?
+  // Driver-specific fields (OP-2 / d-profile) — only used for role=driver.
+  licenseNumber     String?
+  licenseExpiresAt  DateTime?
+  yearsExperience   Int?
   createdAt      DateTime @default(now())
 
   school  School?  @relation(fields: [schoolId], references: [id])
   partner Partner? @relation(fields: [partnerId], references: [id])
 
-  supervisedBus      Bus?
+  supervisedBus      Bus?                @relation("SupervisorBus")
+  drivenBus          Bus?                @relation("DriverBus")
   trips              Trip[]              @relation("SupervisorTrips")
   studentParentLinks StudentParentLink[]
   notifications      Notification[]
@@ -232,6 +392,8 @@ model User {
   messagesSent        OperationsMessage[] @relation("MessagesFrom")
   messagesReceived    OperationsMessage[] @relation("MessagesTo")
   payments            Payment[]
+  medicalAccessLogs   MedicalAccessLog[]
+  tripRatings         TripRating[]
 
   @@index([schoolId])
 }
@@ -279,6 +441,33 @@ model Payment {
   @@index([schoolId])
 }
 
+enum RefundStatus {
+  pending
+  approved
+  rejected
+}
+
+/// BC-5 / ow-refunds — pro-rata refund/settlement requests raised when a
+/// school or parent downgrades or cancels mid-cycle.
+model Refund {
+  id            String             @id @default(uuid())
+  subjectType   PaymentSubjectType
+  schoolId      String?
+  parentUserId  String?
+  reason        String
+  amountPaid    Float
+  amountOwed    Float
+  refundAmount  Float
+  status        RefundStatus       @default(pending)
+  method        String?
+  createdAt     DateTime           @default(now())
+  resolvedAt    DateTime?
+
+  school School? @relation(fields: [schoolId], references: [id])
+
+  @@index([schoolId])
+}
+
 /// Lightweight real request log for the System Administrator's sa-logs
 /// screen — a genuine (not simulated) rolling record of API activity,
 /// written by request-logging middleware in src/server.ts.
@@ -319,6 +508,7 @@ model Trip {
   busId        String
   supervisorId String?
   direction    TripDirection
+  shift        TripShift     @default(morning)
   status       TripStatus    @default(scheduled)
   scheduledAt  DateTime
   startedAt    DateTime?
@@ -332,6 +522,7 @@ model Trip {
   supervisor User?       @relation("SupervisorTrips", fields: [supervisorId], references: [id])
   events     TripEvent[]
   alerts     Alert[]
+  ratings    TripRating[]
 
   @@index([schoolId])
   @@index([busId])
@@ -352,6 +543,22 @@ model TripEvent {
 
   @@index([tripId])
   @@index([studentId])
+}
+
+/// OP-7 / p-rate-trip — parent's post-trip star rating, feeding the
+/// supervisor's rolling average shown in s-profile.
+model TripRating {
+  id           String   @id @default(uuid())
+  tripId       String
+  parentUserId String
+  stars        Int
+  note         String?
+  createdAt    DateTime @default(now())
+
+  trip   Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  parent User @relation(fields: [parentUserId], references: [id])
+
+  @@index([tripId])
 }
 
 model Alert {
@@ -453,16 +660,76 @@ model OperationsMessage {
 }
 
 model Invoice {
+  id            String             @id @default(uuid())
+  invoiceNumber String             @unique // INV-2026-0714 — sequential, never reused
+  schoolId      String?
+  subjectType   PaymentSubjectType @default(school)
+  parentUserId  String?
+  amount        Float
+  description   String?
+  status        String             @default("unpaid") // paid | unpaid
+  method        String?
+  pdfUrl        String?
+  issuedAt      DateTime           @default(now())
+  dueAt         DateTime
+  paidAt        DateTime?
+
+  school School? @relation(fields: [schoolId], references: [id])
+
+  @@index([schoolId])
+}
+
+/// BC-3/BC-4 — holidays and one-off trip cancellations (a-calendar).
+model Holiday {
   id        String   @id @default(uuid())
   schoolId  String
-  amount    Float
-  status    String   @default("unpaid") // paid | unpaid
-  issuedAt  DateTime @default(now())
-  dueAt     DateTime
+  date      DateTime
+  reason    String
+  scope     String   @default("all") // all | morning | evening
+  createdAt DateTime @default(now())
 
   school School @relation(fields: [schoolId], references: [id])
 
   @@index([schoolId])
+  @@index([date])
+}
+
+/// OP-4 / p-absence — a parent's pre-announced absence, so the supervisor
+/// sees "reported absent" instead of an unexplained no-show.
+model Absence {
+  id        String   @id @default(uuid())
+  studentId String
+  fromDate  DateTime
+  toDate    DateTime
+  reason    String?
+  status    String   @default("active") // active | cancelled
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+enum MaintenanceType {
+  routine
+  emergency
+}
+
+/// OP-6 / a-maintenance — fleet maintenance history, plus reports filed
+/// directly from the driver app (d-home "إبلاغ عطل مركبة").
+model MaintenanceRecord {
+  id        String          @id @default(uuid())
+  busId     String
+  type      MaintenanceType
+  cost      Float?
+  workshop  String?
+  notes     String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+
+  bus Bus @relation(fields: [busId], references: [id], onDelete: Cascade)
+
+  @@index([busId])
 }
 
 model PlatformSettings {

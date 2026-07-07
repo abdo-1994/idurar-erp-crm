@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, EmptyState, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ScreenContainer, StatusPill, SubscriptionBanner, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -15,10 +15,15 @@ export default function ParentHomeScreen() {
     queryKey: ["parent-children-status", user.id],
     queryFn: () => api.parent.childrenStatus(user.id),
   });
+  const { data: subscription } = useQuery({
+    queryKey: ["parent-subscription", user.id],
+    queryFn: () => api.subscriptions.parentSubscription(user.id),
+  });
 
   return (
     <ScreenContainer>
       <Text style={styles.greeting}>مرحباً، {user.name} 👋</Text>
+      <SubscriptionBanner endsAt={subscription?.endsAt} />
 
       <TouchableOpacity onPress={() => router.push("/(parent)/notifications")} style={styles.notifBar}>
         <Text style={styles.notifBarText}>🔔 الإشعارات</Text>
@@ -61,6 +66,8 @@ export default function ParentHomeScreen() {
 
       <Button title="+ إضافة ابن آخر" variant="outline" onPress={() => router.push("/(parent)/add-student")} />
       <Button title="الاشتراك والدفع" variant="outline" onPress={() => router.push("/(parent)/subscription")} />
+      <Button title="🧾 الفواتير" variant="outline" onPress={() => router.push("/(parent)/invoices")} />
+      <Button title="💳 حالة وسائل الدفع" variant="outline" onPress={() => router.push("/(parent)/payment-status")} />
       <Button title="التواصل والدعم" variant="outline" onPress={() => router.push("/(parent)/contact")} />
       <Button title="حسابي" variant="outline" onPress={() => router.push("/(parent)/profile")} />
       <Button title="تحديث" variant="outline" onPress={() => refetch()} />

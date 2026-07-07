@@ -47,8 +47,19 @@ export function createApiClient(config: ApiClientConfig) {
         http.post<AuthResponse>("/auth/sysadmin/login", { email, password }),
       partnerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/partner/login", { email, password }),
+      driverLogin: (employeeCode: string) =>
+        http.post<{ ok: true }>("/auth/driver/login", { employeeCode }),
+      driverPinVerify: (employeeCode: string, pin: string) =>
+        http.post<AuthResponse>("/auth/driver/pin-verify", { employeeCode, pin }),
       refresh: (refreshToken: string) => http.post<AuthResponse>("/auth/refresh", { refreshToken }),
       logout: (refreshToken: string) => http.post<void>("/auth/logout", { refreshToken }),
+    },
+
+    consent: {
+      status: () => http.get<{ required: boolean; currentVersion: string; latest: unknown }>("/consent/status"),
+      record: (body: { trackingConsent: boolean; medicalConsent: boolean; policyConsent: boolean; appVersion?: string }) =>
+        http.post("/consent/record", body),
+      withdraw: () => http.post<{ ok: true }>("/consent/withdraw"),
     },
 
     supervisor: {
@@ -79,6 +90,28 @@ export function createApiClient(config: ApiClientConfig) {
         http.put(`/supervisor/${supervisorId}/settings`, body),
       changePin: (supervisorId: string, currentPin: string, newPin: string) =>
         http.put<{ ok: true }>(`/supervisor/${supervisorId}/pin`, { currentPin, newPin }),
+      profile: (supervisorId: string) => http.get(`/supervisor/${supervisorId}/profile`),
+      pickupInfo: (tripId: string, studentId: string) =>
+        http.get(`/trips/${tripId}/students/${studentId}/pickup-info`),
+      verifiedAlight: (tripId: string, studentId: string, verifiedBy: "parent" | "delegate", delegateId?: string) =>
+        http.post<TripEvent>(`/trips/${tripId}/alight`, { studentId, verifiedBy, delegateId }),
+      reportNotCollected: (tripId: string, studentId: string) =>
+        http.post(`/trips/${tripId}/students/${studentId}/not-collected`),
+      markCollected: (tripId: string, studentId: string, note?: string) =>
+        http.put(`/trips/${tripId}/students/${studentId}/collected`, { note }),
+      medicalEmergencyAccess: (studentId: string, tripId?: string) =>
+        http.post(`/students/${studentId}/medical/emergency-access`, { tripId }),
+      reportMaintenanceIssue: (busId: string, notes: string) =>
+        http.post(`/buses/${busId}/maintenance`, { type: "emergency", notes }),
+    },
+
+    driver: {
+      myBus: () => http.get<BusWithTelemetry | null>("/drivers/me/bus"),
+      reportBreakdown: (busId: string, notes: string) =>
+        http.post(`/buses/${busId}/maintenance`, { type: "emergency", notes }),
+      maintenanceHistory: (busId: string) => http.get(`/buses/${busId}/maintenance`),
+      sos: (body: { tripId: string | null; lat: number; lng: number; description?: string }) =>
+        http.post("/emergency/sos", body),
     },
 
     notifications: {
@@ -105,6 +138,37 @@ export function createApiClient(config: ApiClientConfig) {
         http.put(`/parents/${parentId}/notification-prefs`, body),
       contactSupport: (body: { message: string; channel: string }) =>
         http.post("/support/contact", body),
+      // SF-2: medical profile
+      medicalProfile: (studentId: string) => http.get(`/students/${studentId}/medical`),
+      updateMedicalProfile: (studentId: string, body: {
+        bloodType?: string; allergies?: string[]; medications?: string[]; chronicConditions?: string;
+        emergencyContactName: string; emergencyContactPhone: string; doctorName?: string;
+      }) => http.put(`/students/${studentId}/medical`, body),
+      medicalAccessLogs: (studentId: string) => http.get(`/students/${studentId}/medical/access-logs`),
+      // SF-3: pickup delegation
+      delegates: (studentId: string) => http.get(`/students/${studentId}/delegates`),
+      createDelegate: (studentId: string, body: {
+        type: "single_day" | "period" | "permanent"; fromDate?: string; toDate?: string;
+        name: string; nationalId: string; relation: string; phone: string; photoUrl?: string;
+      }) => http.post(`/students/${studentId}/delegates`, body),
+      cancelDelegate: (studentId: string, delegateId: string) =>
+        http.put(`/students/${studentId}/delegates/${delegateId}/cancel`),
+      // SF-4: lost NFC bracelet
+      reportLostNfc: (studentId: string, reason?: string) =>
+        http.post(`/students/${studentId}/nfc/report-lost`, { reason }),
+      // OP-4: pre-announced absence
+      absences: (studentId: string) => http.get(`/students/${studentId}/absences`),
+      createAbsence: (studentId: string, body: { fromDate: string; toDate: string; reason?: string }) =>
+        http.post(`/students/${studentId}/absences`, body),
+      cancelAbsence: (studentId: string, absenceId: string) =>
+        http.put(`/students/${studentId}/absences/${absenceId}/cancel`),
+      // OP-7: trip rating
+      rateTrip: (tripId: string, stars: number, note?: string) =>
+        http.post(`/trips/${tripId}/rate`, { stars, note }),
+      // BC-5/BC-6: refunds + invoices
+      requestRefund: (body: { subjectType: "parent"; subjectId: string; reason: string; amountPaid: number; amountOwed: number }) =>
+        http.post("/refunds/request", body),
+      invoices: (parentId: string) => http.get(`/parents/${parentId}/invoices`),
     },
 
     school: {
@@ -135,6 +199,58 @@ export function createApiClient(config: ApiClientConfig) {
         http.put(`/schools/${schoolId}/settings`, body),
       parents: (schoolId: string) => http.get(`/schools/${schoolId}/parents`),
       payments: (schoolId: string) => http.get(`/schools/${schoolId}/payments`),
+      invoices: (schoolId: string) => http.get(`/schools/${schoolId}/invoices`),
+      requestRefund: (body: { subjectType: "school"; subjectId: string; reason: string; amountPaid: number; amountOwed: number }) =>
+        http.post("/refunds/request", body),
+
+      // OP-1: edit/archive students, supervisors, buses
+      archiveStudent: (studentId: string) => http.put(`/students/${studentId}`, { status: "archived" }),
+      updateSupervisor: (schoolId: string, supervisorId: string, body: { name?: string; phone?: string; busId?: string | null }) =>
+        http.put(`/schools/${schoolId}/supervisors/${supervisorId}`, body),
+      resetSupervisorPin: (schoolId: string, supervisorId: string) =>
+        http.put<{ ok: true; devPin: string }>(`/schools/${schoolId}/supervisors/${supervisorId}/reset-pin`),
+      endSupervisorService: (schoolId: string, supervisorId: string) =>
+        http.put(`/schools/${schoolId}/supervisors/${supervisorId}/end-service`),
+      updateBus: (busId: string, body: { busNumber?: string; plateNumber?: string; capacity?: number; supervisorId?: string | null; driverId?: string | null }) =>
+        http.put(`/buses/${busId}`, body),
+      setBusServiceStatus: (busId: string, outOfService: boolean, reason?: string) =>
+        http.put(`/buses/${busId}/service-status`, { outOfService, reason }),
+      setRouteSettings: (busId: string, body: { polyline?: Array<{ lat: number; lng: number }>; deviationSensitivity?: string }) =>
+        http.put(`/buses/${busId}/route-settings`, body),
+
+      // OP-2: driver roster
+      drivers: (schoolId: string) => http.get<User[]>(`/schools/${schoolId}/drivers`),
+      createDriver: (schoolId: string, body: { name: string; phone: string; licenseNumber: string; licenseExpiresAt?: string; yearsExperience?: number; busId?: string }) =>
+        http.post(`/schools/${schoolId}/drivers`, body),
+      updateDriver: (schoolId: string, driverId: string, body: Record<string, unknown>) =>
+        http.put(`/schools/${schoolId}/drivers/${driverId}`, body),
+
+      // OP-3: calendar/holidays
+      holidays: (schoolId: string) => http.get(`/schools/${schoolId}/holidays`),
+      createHoliday: (schoolId: string, body: { date: string; reason: string; scope?: "all" | "morning" | "evening" }) =>
+        http.post(`/schools/${schoolId}/holidays`, body),
+      deleteHoliday: (schoolId: string, holidayId: string) =>
+        http.delete(`/schools/${schoolId}/holidays/${holidayId}`),
+      todayStatus: (schoolId: string) => http.get<{ disabled: boolean; holiday: unknown }>(`/schools/${schoolId}/today-status`),
+
+      // OP-6: fleet maintenance
+      maintenanceRecords: (busId: string) => http.get(`/buses/${busId}/maintenance`),
+      addMaintenanceRecord: (busId: string, body: { type: "routine" | "emergency"; cost?: number; workshop?: string; notes?: string; date?: string }) =>
+        http.post(`/buses/${busId}/maintenance`, body),
+      setMaintenanceDates: (busId: string, body: { inspectionExpiresAt?: string; insuranceExpiresAt?: string }) =>
+        http.put(`/buses/${busId}/maintenance-dates`, body),
+
+      // BC-2: Excel student import
+      importTemplateUrl: (schoolId: string) => `/schools/${schoolId}/students/import-template`,
+      previewImport: (schoolId: string, file: { uri: string; name: string; type: string }) => {
+        const form = new FormData();
+        // React Native's FormData accepts a {uri,name,type} file descriptor
+        // directly — not a real Blob — hence the loose cast here.
+        form.append("file", file as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+        return http.upload(`/schools/${schoolId}/students/import/preview`, form);
+      },
+      confirmImport: (schoolId: string, rows: unknown[]) =>
+        http.post<{ ok: true; imported: number }>(`/schools/${schoolId}/students/import/confirm`, { rows }),
     },
 
     operations: {
@@ -151,6 +267,9 @@ export function createApiClient(config: ApiClientConfig) {
       sendMessage: (body: { toUserId: string; message: string; channel: "app" | "sms" }) =>
         http.post("/operations/messages", body),
       dailyReport: () => http.get("/operations/daily-report"),
+      notCollected: () => http.get("/operations/not-collected"),
+      instructSupervisor: (alertId: string, instruction: string) =>
+        http.post(`/operations/not-collected/${alertId}/instruct`, { instruction }),
     },
 
     owner: {
@@ -177,6 +296,19 @@ export function createApiClient(config: ApiClientConfig) {
       updatePlatformSettings: (body: Record<string, unknown>) => http.put(`/owner/platform-settings`, body),
       users: (query = "") => http.get(`/owner/users${query}`),
       notifications: () => http.get(`/owner/notifications`),
+      onboardSchool: (body: {
+        name: string; slug: string; address?: string; region?: string; licenseNumber?: string; phone?: string; email?: string;
+        adminName: string; adminEmail: string; packageId: string; partnerId?: string; contractCycle?: "monthly" | "yearly";
+      }) => http.post<{ school: School; admin: { id: string; email: string }; devTempPassword: string }>("/owner/schools/onboard", body),
+      partnerTiers: () => http.get("/owner/partner-tiers"),
+      updatePartnerTier: (id: string, body: { commissionPercent?: number; minActiveSchools?: number }) =>
+        http.put(`/owner/partner-tiers/${id}`, body),
+      refunds: () => http.get("/owner/refunds"),
+      resolveRefund: (id: string, status: "approved" | "rejected", refundAmount?: number) =>
+        http.put(`/owner/refunds/${id}`, { status, refundAmount }),
+      lifecyclePolicy: () => http.get("/subscriptions/lifecycle-policy"),
+      updateLifecyclePolicy: (body: Record<string, unknown>) => http.put("/subscriptions/lifecycle-policy", body),
+      paymentGatewayStatus: () => http.get("/payments/gateway-status"),
     },
 
     partner: {
@@ -212,6 +344,8 @@ export function createApiClient(config: ApiClientConfig) {
         receiptUrl?: string;
       }) => http.post(`/payments`, body),
       parentPayments: (parentId: string) => http.get(`/parents/${parentId}/payments`),
+      gatewayStatus: () => http.get("/payments/gateway-status"),
+      lifecyclePolicy: () => http.get("/subscriptions/lifecycle-policy"),
     },
   };
 }

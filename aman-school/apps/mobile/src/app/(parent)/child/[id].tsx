@@ -23,6 +23,10 @@ export default function ChildDetailScreen() {
           <Button title="تتبع الباص مباشرة" onPress={() => router.push(`/(parent)/tracking/${(student as any).busId}`)} color={colors.blueMid} />
         ) : null}
         <Button title="سجل رحلاته الكاملة" variant="outline" onPress={() => router.push(`/(parent)/trip-history/${id}`)} />
+        <Button title="🩺 الملف الطبي" variant="outline" onPress={() => router.push(`/(parent)/medical/${id}`)} />
+        <Button title="👤 تفويض استلام" variant="outline" onPress={() => router.push(`/(parent)/delegate/${id}`)} />
+        <Button title="📅 إبلاغ غياب" variant="outline" onPress={() => router.push(`/(parent)/absence/${id}`)} />
+        <Button title="⚠️ الإبلاغ عن فقدان السوار" variant="outline" color={colors.red} onPress={() => router.push(`/(parent)/lost-nfc/${id}`)} />
       </View>
     </ScreenContainer>
   );

@@ -35,6 +35,12 @@ export default function OwnerSchoolsScreen() {
 
   return (
     <ScreenContainer>
+      <Button
+        title="🚀 معالج الإطلاق الكامل (5 خطوات)"
+        onPress={() => router.push("/(owner)/onboarding")}
+        color={colors.purpleMid}
+      />
+      <View style={{ height: 12 }} />
       <FlatList
         data={schools}
         keyExtractor={(s) => s.id}

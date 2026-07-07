@@ -49,6 +49,7 @@ export default function SupervisorSettingsScreen() {
       <SectionHeader title="معلومات المشرف" accentColor={colors.blueMid} />
       <Text style={styles.info}>{user.name}</Text>
       <Text style={styles.infoSub}>رمز الموظف: {user.employeeCode}</Text>
+      <Button title="عرض الملف الشخصي الكامل" variant="outline" onPress={() => router.push("/(supervisor)/profile")} />
 
       <SectionHeader title="الصوت والاهتزاز" accentColor={colors.blueMid} />
       <View style={styles.row}>

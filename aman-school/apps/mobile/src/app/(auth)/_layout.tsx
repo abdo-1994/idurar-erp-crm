@@ -11,8 +11,11 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="role-select" options={{ title: "أمان سكول", headerShown: false }} />
+      <Stack.Screen name="consent" options={{ title: "الموافقة على الخصوصية", headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="supervisor-login" options={{ title: "دخول المشرف" }} />
       <Stack.Screen name="supervisor-pin" options={{ title: "رمز الدخول" }} />
+      <Stack.Screen name="driver-login" options={{ title: "دخول السائق" }} />
+      <Stack.Screen name="driver-pin" options={{ title: "رمز الدخول" }} />
       <Stack.Screen name="parent-login" options={{ title: "دخول ولي الأمر" }} />
       <Stack.Screen name="parent-otp" options={{ title: "التحقق" }} />
       <Stack.Screen name="school-login" options={{ title: "دخول مدير المدرسة" }} />

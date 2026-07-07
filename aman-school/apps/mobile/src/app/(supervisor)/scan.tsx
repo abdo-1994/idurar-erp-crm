@@ -50,6 +50,17 @@ export default function ScanScreen() {
     },
   });
 
+  /* ---- SF-5: if this student has an active pickup delegate, verify identity
+   * first instead of alighting immediately ---- */
+  async function handleAlight(studentId: string) {
+    const info = (await api.supervisor.pickupInfo(tripId, studentId)) as { activeDelegate: unknown };
+    if (info.activeDelegate) {
+      router.push(`/(supervisor)/verify-pickup/${studentId}`);
+    } else {
+      alightMutation.mutate(studentId);
+    }
+  }
+
   const boardedCount = boardedIds.size;
   const total = roster?.length ?? 0;
 
@@ -84,7 +95,7 @@ export default function ScanScreen() {
                 {alighted ? (
                   <StatusPill label="نزل" tone="neutral" />
                 ) : boarded ? (
-                  <TouchableOpacity onPress={() => alightMutation.mutate(item.id)}>
+                  <TouchableOpacity onPress={() => handleAlight(item.id)}>
                     <StatusPill label="اضغط لتسجيل النزول" tone="success" />
                   </TouchableOpacity>
                 ) : (
@@ -93,6 +104,7 @@ export default function ScanScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+              <Text style={styles.medicalLink} onPress={() => router.push(`/(supervisor)/medical-alert/${item.id}`)}>🩺 طوارئ طبية</Text>
             </Card>
           );
         }}
@@ -118,6 +130,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
   name: { fontWeight: "700", color: colors.navy, fontSize: 14 },
   grade: { color: colors.gray600, fontSize: 12 },
+  medicalLink: { color: colors.red, fontSize: 11, fontWeight: "700", marginTop: 8 },
   footer: { flexDirection: "row", gap: 8, padding: 12, backgroundColor: colors.white },
   sosButton: {
     position: "absolute", bottom: 90, left: 16, backgroundColor: colors.red,

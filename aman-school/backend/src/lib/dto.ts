@@ -11,5 +11,8 @@ export function toUserDto(user: User) {
     schoolId: user.schoolId,
     partnerId: user.partnerId,
     employeeCode: user.employeeCode,
+    licenseNumber: user.licenseNumber,
+    licenseExpiresAt: user.licenseExpiresAt,
+    yearsExperience: user.yearsExperience,
   };
 }
