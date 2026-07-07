@@ -60,7 +60,9 @@ export default function ParentHomeScreen() {
       )}
 
       <Button title="+ إضافة ابن آخر" variant="outline" onPress={() => router.push("/(parent)/add-student")} />
+      <Button title="الاشتراك والدفع" variant="outline" onPress={() => router.push("/(parent)/subscription")} />
       <Button title="التواصل والدعم" variant="outline" onPress={() => router.push("/(parent)/contact")} />
+      <Button title="حسابي" variant="outline" onPress={() => router.push("/(parent)/profile")} />
       <Button title="تحديث" variant="outline" onPress={() => refetch()} />
     </ScreenContainer>
   );

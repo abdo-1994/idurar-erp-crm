@@ -19,6 +19,7 @@ datasource db {
 
 enum Role {
   owner
+  sysadmin
   partner
   school_admin
   ops_room
@@ -122,6 +123,7 @@ model School {
   alerts            Alert[]
   invoices          Invoice[]
   studentParentLinks StudentParentLink[]
+  payments          Payment[]
 }
 
 model Stop {
@@ -208,9 +210,12 @@ model User {
   schoolId       String?
   partnerId      String?
   employeeCode   String?  @unique
-  passwordHash   String? // school_admin / ops_room / owner / partner
+  passwordHash   String? // school_admin / ops_room / owner / partner / sysadmin
   pinHash        String? // supervisor
   notificationPrefs Json?
+  // Parent-level subscription (P-6/subscribe+payment flow) — additive, only used for role=parent.
+  subscriptionTier   String?
+  subscriptionEndsAt DateTime?
   createdAt      DateTime @default(now())
 
   school  School?  @relation(fields: [schoolId], references: [id])
@@ -226,8 +231,67 @@ model User {
   supportMessages     SupportMessage[]
   messagesSent        OperationsMessage[] @relation("MessagesFrom")
   messagesReceived    OperationsMessage[] @relation("MessagesTo")
+  payments            Payment[]
 
   @@index([schoolId])
+}
+
+enum PaymentSubjectType {
+  parent
+  school
+}
+
+enum PaymentMethod {
+  ecash
+  bank_transfer
+  cash
+  yemenpay
+}
+
+enum PaymentStatus {
+  pending
+  confirmed
+  rejected
+}
+
+/// A subscription payment submission — parent-level or school-level. No real
+/// payment gateway is integrated (see docs/architecture); submissions are
+/// dev-auto-confirmed the same way OTP is dev-shortcut, mirroring how a human
+/// operator would confirm a bank transfer/eCash receipt in production.
+model Payment {
+  id            String             @id @default(uuid())
+  subjectType   PaymentSubjectType
+  parentUserId  String?
+  schoolId      String?
+  packageName   String
+  cycle         String // monthly | quarterly | yearly
+  amount        Float
+  method        PaymentMethod
+  status        PaymentStatus      @default(pending)
+  receiptUrl    String?
+  createdAt     DateTime           @default(now())
+  confirmedAt   DateTime?
+
+  parent User?   @relation(fields: [parentUserId], references: [id])
+  school School? @relation(fields: [schoolId], references: [id])
+
+  @@index([parentUserId])
+  @@index([schoolId])
+}
+
+/// Lightweight real request log for the System Administrator's sa-logs
+/// screen — a genuine (not simulated) rolling record of API activity,
+/// written by request-logging middleware in src/server.ts.
+model RequestLog {
+  id         String   @id @default(uuid())
+  method     String
+  path       String
+  statusCode Int
+  durationMs Int
+  level      String // info | warn | error
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model StudentParentLink {

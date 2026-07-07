@@ -7,6 +7,7 @@ import { useSessionStore } from "../../store/session";
 
 const LINKS = [
   { href: "/(school)/students", label: "الطلاب", icon: "🎒" },
+  { href: "/(school)/parents", label: "أولياء الأمور", icon: "👨‍👩‍👦" },
   { href: "/(school)/buses", label: "الباصات", icon: "🚌" },
   { href: "/(school)/supervisors", label: "المشرفون", icon: "👮" },
   { href: "/(school)/live-trips", label: "الرحلات المباشرة", icon: "🗺️" },

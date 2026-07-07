@@ -4,6 +4,7 @@ import { asyncHandler } from "../lib/asyncHandler";
 import { authenticate, requireRole } from "../auth/middleware";
 import { badRequest, notFound } from "../lib/errors";
 import { hashSecret } from "../lib/password";
+import { toUserDto } from "../lib/dto";
 
 export const ownerRouter = Router();
 ownerRouter.use(authenticate);
@@ -209,5 +210,52 @@ ownerRouter.put(
       create: { id: "singleton", data: req.body ?? {} },
     });
     res.json(updated.data);
+  })
+);
+
+/* ---- OWN-08 (ow-users): every user on the platform, across all schools ---- */
+ownerRouter.get(
+  "/owner/users",
+  asyncHandler(async (req, res) => {
+    const { role, q } = req.query as Record<string, string | undefined>;
+    const where: any = {};
+    if (role) where.role = role;
+    if (q) where.OR = [{ name: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }, { email: { contains: q, mode: "insensitive" } }];
+    const users = await prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { school: true } });
+    res.json(
+      users.map((u) => ({ ...toUserDto(u), schoolName: u.school?.name ?? null, createdAt: u.createdAt }))
+    );
+  })
+);
+
+/* ---- ow-notifications: executive-only alerts (subscription expiry, growth, new partner requests) ---- */
+ownerRouter.get(
+  "/owner/notifications",
+  asyncHandler(async (_req, res) => {
+    const soon = new Date(Date.now() + 30 * 86400000);
+    const [expiringSchools, recentSchools, totalStudents] = await Promise.all([
+      prisma.school.findMany({ where: { subscriptionStatus: { in: ["trial", "suspended"] } }, take: 10 }),
+      prisma.school.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
+      prisma.student.count(),
+    ]);
+
+    const items = [
+      ...expiringSchools.map((s) => ({
+        type: "subscription_risk",
+        message: `مدرسة ${s.name}: الاشتراك ${s.subscriptionStatus === "trial" ? "تجريبي" : "معلّق"} — يحتاج متابعة`,
+        createdAt: s.createdAt,
+      })),
+      ...recentSchools.map((s) => ({
+        type: "new_school",
+        message: `مدرسة جديدة انضمت: ${s.name}`,
+        createdAt: s.createdAt,
+      })),
+      {
+        type: "growth",
+        message: `إجمالي الطلاب النشطين على المنصة: ${totalStudents}`,
+        createdAt: new Date(),
+      },
+    ];
+    res.json(items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
   })
 );

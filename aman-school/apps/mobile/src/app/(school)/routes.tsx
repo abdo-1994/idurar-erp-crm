@@ -22,7 +22,7 @@ export default function RoutesScreen() {
       bus?.route?.stops
         ?.slice()
         .sort((a, b) => a.order - b.order)
-        .map((s) => ({ name: s.name, lat: String(s.lat), lng: String(s.lng) })) ?? [{ name: "المدرسة", lat: "15.3694", lng: "44.1910" }]
+        .map((s) => ({ name: s.name, lat: String(s.lat), lng: String(s.lng) })) ?? [{ name: "المدرسة", lat: "12.7855", lng: "45.0187" }]
     );
   }
 
@@ -91,7 +91,7 @@ export default function RoutesScreen() {
       <Button
         title="+ إضافة محطة"
         variant="outline"
-        onPress={() => setStops((prev) => [...prev, { name: "", lat: "15.3694", lng: "44.1910" }])}
+        onPress={() => setStops((prev) => [...prev, { name: "", lat: "12.7855", lng: "45.0187" }])}
       />
       <Button title="حفظ المسار" onPress={() => saveMutation.mutate()} loading={saveMutation.isPending} color={colors.amber} />
       <Button title="اختيار باص آخر" variant="outline" onPress={() => setSelectedBusId(null)} />

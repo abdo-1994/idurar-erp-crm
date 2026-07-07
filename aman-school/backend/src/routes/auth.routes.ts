@@ -95,7 +95,7 @@ authRouter.post(
 
 /* ---------------- Email + password roles ---------------- */
 
-function emailPasswordLogin(role: "school_admin" | "ops_room" | "owner" | "partner") {
+function emailPasswordLogin(role: "school_admin" | "ops_room" | "owner" | "partner" | "sysadmin") {
   return asyncHandler(async (req: import("express").Request, res: import("express").Response) => {
     const { email, password } = req.body ?? {};
     if (!email || !password) throw badRequest("email and password are required");
@@ -120,6 +120,8 @@ authRouter.post("/auth/owner/login", emailPasswordLogin("owner"));
 // Not in the api-client contract but symmetric with the other email/password
 // roles and needed to exercise the Partner Dashboard (OWN-09) independently.
 authRouter.post("/auth/partner/login", emailPasswordLogin("partner"));
+// System Administrator (sa-login) — technical admin, distinct from Owner.
+authRouter.post("/auth/sysadmin/login", emailPasswordLogin("sysadmin"));
 
 /* ---------------- Refresh token rotation ---------------- */
 

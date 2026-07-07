@@ -7,7 +7,7 @@ import { colors } from "@aman-school/shared-ui";
 import type { GpsPing } from "@aman-school/types";
 import { api, connectSocket } from "../../../lib/api";
 
-const SANAA = { latitude: 15.3694, longitude: 44.191 };
+const ADEN = { latitude: 12.7855, longitude: 45.0187 };
 
 export default function TrackingMapScreen() {
   const { busId } = useLocalSearchParams<{ busId: string }>();
@@ -38,7 +38,7 @@ export default function TrackingMapScreen() {
     <View style={{ flex: 1 }}>
       <MapView
         style={{ flex: 1 }}
-        initialRegion={{ ...(position ?? SANAA), latitudeDelta: 0.08, longitudeDelta: 0.08 }}
+        initialRegion={{ ...(position ?? ADEN), latitudeDelta: 0.08, longitudeDelta: 0.08 }}
         region={position ? { ...position, latitudeDelta: 0.05, longitudeDelta: 0.05 } : undefined}
       >
         {position ? (

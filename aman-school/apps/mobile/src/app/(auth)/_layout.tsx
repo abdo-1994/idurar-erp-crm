@@ -18,6 +18,7 @@ export default function AuthLayout() {
       <Stack.Screen name="school-login" options={{ title: "دخول مدير المدرسة" }} />
       <Stack.Screen name="ops-login" options={{ title: "دخول غرفة العمليات" }} />
       <Stack.Screen name="owner-login" options={{ title: "دخول مالك النظام" }} />
+      <Stack.Screen name="sysadmin-login" options={{ title: "دخول مدير النظام" }} />
       <Stack.Screen name="partner-login" options={{ title: "دخول الشريك" }} />
     </Stack>
   );

@@ -76,6 +76,20 @@ operationsRouter.put(
   })
 );
 
+/* ---- O-5: incidents list (all alerts, any status, with resolution summary) ---- */
+operationsRouter.get(
+  "/incidents",
+  asyncHandler(async (req, res) => {
+    const incidents = await prisma.alert.findMany({
+      where: scopeFilter(req.user!),
+      include: { bus: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    res.json(incidents);
+  })
+);
+
 /* ---- OPS-03: incident detail == an alert with its trip/bus/action-log context ---- */
 operationsRouter.get(
   "/incidents/:id",

@@ -80,7 +80,7 @@ export type Student = z.infer<typeof StudentSchema>;
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
-  role: z.enum(["owner", "partner", "school_admin", "ops_room", "supervisor", "parent"]),
+  role: z.enum(["owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent"]),
   name: z.string(),
   phone: z.string().nullable(),
   email: z.string().email().nullable(),
@@ -158,3 +158,57 @@ export const GpsPingSchema = z.object({
   timestamp: z.string().datetime(),
 });
 export type GpsPing = z.infer<typeof GpsPingSchema>;
+
+/* ---- Subscriptions & payments (Yemen: parent-level + school-level) ---- */
+
+export const PaymentSubjectTypeSchema = z.enum(["parent", "school"]);
+export const PaymentMethodSchema = z.enum(["ecash", "bank_transfer", "cash", "yemenpay"]);
+export const PaymentStatusSchema = z.enum(["pending", "confirmed", "rejected"]);
+export const BillingCycleSchema = z.enum(["monthly", "quarterly", "yearly"]);
+
+export const PaymentSchema = z.object({
+  id: z.string().uuid(),
+  subjectType: PaymentSubjectTypeSchema,
+  parentUserId: z.string().uuid().nullable(),
+  schoolId: z.string().uuid().nullable(),
+  packageName: z.string(),
+  cycle: BillingCycleSchema,
+  amount: z.number(),
+  method: PaymentMethodSchema,
+  status: PaymentStatusSchema,
+  receiptUrl: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  confirmedAt: z.string().datetime().nullable(),
+});
+export type Payment = z.infer<typeof PaymentSchema>;
+
+/** Canonical Yemen pricing (YER) — single source of truth for both parent-level
+ * and school-level subscription tiers, per the v3.0 spec. */
+export const PARENT_PACKAGE_TIERS = [
+  {
+    tier: "basic", name: "الأساسية", priceMonthly: 2000, priceYearly: 20000, buses: 1, children: 1,
+    features: ["تتبع باص واحد", "إشعارات صعود ونزول", "سجل 30 يوم", "واتساب للدعم"],
+  },
+  {
+    tier: "advanced", name: "المتقدمة", priceMonthly: 3500, priceYearly: 35000, buses: 3, children: 2,
+    features: ["تتبع 3 باصات", "إشعارات فورية", "سجل 6 أشهر", "تقارير حضور أسبوعية", "اتصال مباشر بالمشرف"],
+  },
+  {
+    tier: "full", name: "الشاملة", priceMonthly: 6000, priceYearly: 60000, buses: null, children: null,
+    features: ["تتبع غير محدود", "جميع الميزات", "سجل سنة كاملة", "دعم أولوية 24/7", "تنبيهات SOS فورية"],
+  },
+] as const;
+
+export const SCHOOL_PACKAGE_TIERS = [
+  { tier: "basic", name: "أساسي", priceMonthly: 15000, buses: 2, students: 50 },
+  { tier: "advanced", name: "متقدم", priceMonthly: 45000, buses: 5, students: 200 },
+  { tier: "full", name: "شامل", priceMonthly: 80000, buses: null, students: null },
+] as const;
+
+export const YEMEN_EMERGENCY_NUMBERS = {
+  ambulance: "191",
+  police: "194",
+  fire: "191",
+  civilDefense: "191",
+  redCrescent: "194",
+} as const;

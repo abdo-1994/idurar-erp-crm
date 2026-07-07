@@ -15,6 +15,7 @@ export default function SchoolLayout() {
         <Stack.Screen name="dashboard" options={{ title: "لوحة المدرسة" }} />
         <Stack.Screen name="students" options={{ title: "إدارة الطلاب" }} />
         <Stack.Screen name="student/[id]" options={{ title: "تفاصيل الطالب" }} />
+        <Stack.Screen name="parents" options={{ title: "أولياء الأمور" }} />
         <Stack.Screen name="buses" options={{ title: "إدارة الباصات" }} />
         <Stack.Screen name="supervisors" options={{ title: "إدارة المشرفين" }} />
         <Stack.Screen name="routes" options={{ title: "إدارة المسارات" }} />

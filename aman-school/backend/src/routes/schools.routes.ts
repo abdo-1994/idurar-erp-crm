@@ -63,6 +63,34 @@ schoolsRouter.get(
   })
 );
 
+/* ---- A-9: parents/guardians of this school's students ---- */
+schoolsRouter.get(
+  "/schools/:id/parents",
+  asyncHandler(async (req, res) => {
+    assertSchoolAccess(req.user!, req.params.id);
+    const links = await prisma.studentParentLink.findMany({
+      where: { schoolId: req.params.id },
+      include: { parent: true, student: true },
+    });
+    const byParent = new Map<string, { parent: (typeof links)[number]["parent"]; students: (typeof links)[number]["student"][] }>();
+    for (const link of links) {
+      const entry = byParent.get(link.parentUserId) ?? { parent: link.parent, students: [] };
+      entry.students.push(link.student);
+      byParent.set(link.parentUserId, entry);
+    }
+    res.json(
+      [...byParent.values()].map(({ parent, students }) => ({
+        id: parent.id,
+        name: parent.name,
+        phone: parent.phone,
+        subscriptionTier: parent.subscriptionTier,
+        subscriptionEndsAt: parent.subscriptionEndsAt,
+        children: students.map((s) => ({ id: s.id, name: s.name, grade: s.grade })),
+      }))
+    );
+  })
+);
+
 /* ---- SCH-03: students list + create ---- */
 schoolsRouter.get(
   "/schools/:id/students",

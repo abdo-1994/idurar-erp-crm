@@ -10,7 +10,10 @@ const LINKS = [
   { href: "/(owner)/packages", label: "الباقات", icon: "📦" },
   { href: "/(owner)/revenue", label: "الإيرادات", icon: "💰" },
   { href: "/(owner)/analytics", label: "التحليلات", icon: "📈" },
+  { href: "/(owner)/users", label: "المستخدمون", icon: "👥" },
+  { href: "/(owner)/notifications", label: "الإشعارات", icon: "🔔" },
   { href: "/(owner)/settings", label: "الإعدادات", icon: "⚙️" },
+  { href: "/(owner)/profile", label: "حسابي", icon: "👤" },
 ];
 
 export default function OwnerDashboardScreen() {

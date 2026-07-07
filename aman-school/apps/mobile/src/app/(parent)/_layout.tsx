@@ -38,6 +38,8 @@ export default function ParentLayout() {
         <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
         <Stack.Screen name="notification-settings" options={{ title: "إعدادات الإشعارات" }} />
         <Stack.Screen name="contact" options={{ title: "التواصل والدعم" }} />
+        <Stack.Screen name="subscription" options={{ title: "الاشتراك والدفع" }} />
+        <Stack.Screen name="profile" options={{ title: "حسابي" }} />
       </Stack>
     </RoleGuardLayout>
   );

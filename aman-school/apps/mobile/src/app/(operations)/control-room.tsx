@@ -40,6 +40,16 @@ export default function ControlRoomScreen() {
           <Text style={styles.linkTitle}>💬 التواصل</Text>
         </Card>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(operations)/incidents")}>
+        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.amberMid}>
+          <Text style={styles.linkTitle}>📋 سجل الحوادث</Text>
+        </Card>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(operations)/profile")}>
+        <Card style={{ backgroundColor: "rgba(255,255,255,0.06)" }} accentColor={colors.purpleMid}>
+          <Text style={styles.linkTitle}>👤 حسابي</Text>
+        </Card>
+      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>الرحلات الجارية الآن</Text>
       {trips?.map((t: any) => (

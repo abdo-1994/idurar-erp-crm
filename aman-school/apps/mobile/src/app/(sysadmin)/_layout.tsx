@@ -19,9 +19,9 @@ function LogoutHeaderButton() {
   );
 }
 
-export default function OperationsLayout() {
+export default function SysadminLayout() {
   return (
-    <RoleGuardLayout allow={["ops_room", "school_admin", "owner", "partner"]}>
+    <RoleGuardLayout allow={["sysadmin", "owner"]}>
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.navy },
@@ -29,13 +29,14 @@ export default function OperationsLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="control-room" options={{ title: "غرفة العمليات", headerRight: LogoutHeaderButton }} />
-        <Stack.Screen name="alerts" options={{ title: "إدارة التنبيهات" }} />
-        <Stack.Screen name="incidents" options={{ title: "سجل الحوادث" }} />
-        <Stack.Screen name="incident/[id]" options={{ title: "تفاصيل الحادثة" }} />
-        <Stack.Screen name="communications" options={{ title: "التواصل" }} />
-        <Stack.Screen name="daily-report" options={{ title: "تقرير اليوم" }} />
-        <Stack.Screen name="profile" options={{ title: "حسابي" }} />
+        <Stack.Screen name="dashboard" options={{ title: "لوحة مدير النظام", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="users" options={{ title: "إدارة المستخدمين" }} />
+        <Stack.Screen name="roles" options={{ title: "الأدوار والصلاحيات" }} />
+        <Stack.Screen name="servers" options={{ title: "حالة الخوادم" }} />
+        <Stack.Screen name="logs" options={{ title: "سجلات النظام" }} />
+        <Stack.Screen name="backup" options={{ title: "النسخ الاحتياطي" }} />
+        <Stack.Screen name="security" options={{ title: "إعدادات الأمان" }} />
+        <Stack.Screen name="config" options={{ title: "الإعدادات التقنية" }} />
       </Stack>
     </RoleGuardLayout>
   );

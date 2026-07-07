@@ -9,6 +9,7 @@ const ROLE_ROUTES: Record<Role, string> = {
   school_admin: "/(auth)/school-login",
   ops_room: "/(auth)/ops-login",
   owner: "/(auth)/owner-login",
+  sysadmin: "/(auth)/sysadmin-login",
   partner: "/(auth)/partner-login",
 };
 
@@ -18,6 +19,7 @@ const ROLE_ICONS: Record<Role, string> = {
   school_admin: "🏫",
   ops_room: "🎛️",
   owner: "👑",
+  sysadmin: "🛠️",
   partner: "🤝",
 };
 

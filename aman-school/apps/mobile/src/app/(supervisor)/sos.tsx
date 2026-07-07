@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, View, StyleSheet, Alert, Linking, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import { Button, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { YEMEN_EMERGENCY_NUMBERS } from "@aman-school/types";
 import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
 
@@ -15,8 +16,8 @@ export default function SosScreen() {
   async function sendSos() {
     setSending(true);
     try {
-      let lat = 15.3694; // صنعاء (fallback if location permission is denied)
-      let lng = 44.191;
+      let lat = 12.7855; // عدن (fallback if location permission is denied)
+      let lng = 45.0187;
       const perm = await Location.requestForegroundPermissionsAsync();
       if (perm.status === "granted") {
         const pos = await Location.getCurrentPositionAsync({});
@@ -56,6 +57,20 @@ export default function SosScreen() {
 
       <Button title="إرسال تنبيه الطوارئ" onPress={confirmAndSend} loading={sending} color={colors.red} />
       <Button title="إلغاء" variant="outline" onPress={() => router.back()} />
+
+      <Text style={styles.emergencyTitle}>أرقام الطوارئ الرسمية في اليمن</Text>
+      <View style={styles.emergencyRow}>
+        <TouchableOpacity style={styles.emergencyCard} onPress={() => Linking.openURL(`tel:${YEMEN_EMERGENCY_NUMBERS.ambulance}`)}>
+          <Text style={styles.emergencyIcon}>🚑</Text>
+          <Text style={styles.emergencyLabel}>الإسعاف</Text>
+          <Text style={styles.emergencyNumber}>{YEMEN_EMERGENCY_NUMBERS.ambulance}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.emergencyCard} onPress={() => Linking.openURL(`tel:${YEMEN_EMERGENCY_NUMBERS.police}`)}>
+          <Text style={styles.emergencyIcon}>🚓</Text>
+          <Text style={styles.emergencyLabel}>الشرطة</Text>
+          <Text style={styles.emergencyNumber}>{YEMEN_EMERGENCY_NUMBERS.police}</Text>
+        </TouchableOpacity>
+      </View>
     </ScreenContainer>
   );
 }
@@ -68,4 +83,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.red, borderRadius: 10, padding: 12, minHeight: 80,
     textAlignVertical: "top", backgroundColor: colors.white, marginBottom: 16,
   },
+  emergencyTitle: { fontSize: 12, fontWeight: "700", color: colors.gray700, textAlign: "center", marginTop: 24, marginBottom: 10 },
+  emergencyRow: { flexDirection: "row", gap: 10 },
+  emergencyCard: {
+    flex: 1, backgroundColor: colors.white, borderRadius: 12, borderWidth: 1, borderColor: colors.gray200,
+    alignItems: "center", paddingVertical: 14,
+  },
+  emergencyIcon: { fontSize: 22 },
+  emergencyLabel: { fontSize: 11, color: colors.gray700, marginTop: 4 },
+  emergencyNumber: { fontSize: 16, fontWeight: "800", color: colors.red, marginTop: 2 },
 });
