@@ -9,7 +9,7 @@ const hash = (s: string) => bcrypt.hashSync(s, 10);
 // عدن — مقر الشركة (ZASTECH One) ومركز المدارس التجريبية، وليس صنعاء.
 const ADEN = { lat: 12.7855, lng: 45.0187 };
 
-async function main() {
+export async function main() {
   console.log("Seeding Aman School demo data (v3.0 — Aden, Yemen)...");
 
   // ---- Packages (school-level tiers, YER — matches v3.0 pricing exactly) ----
@@ -228,11 +228,13 @@ async function main() {
   console.log("\nSeed complete. Credentials written to backend/SEED_CREDENTIALS.md");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (require.main === module) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
