@@ -45,6 +45,7 @@ export default function OwnerLayout() {
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="users" options={{ title: "مستخدمو المنصة" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات التنفيذية" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

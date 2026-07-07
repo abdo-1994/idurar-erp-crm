@@ -37,6 +37,8 @@ export default function OperationsLayout() {
         <Stack.Screen name="communications" options={{ title: "التواصل" }} />
         <Stack.Screen name="daily-report" options={{ title: "تقرير اليوم" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
+        <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

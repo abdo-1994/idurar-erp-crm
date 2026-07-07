@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { Text, TextInput, View, StyleSheet, FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ScreenContainer, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -15,7 +15,7 @@ export default function StudentsScreen() {
   const [name, setName] = useState("");
   const [grade, setGrade] = useState("");
 
-  const { data: students } = useQuery({
+  const { data: students, isLoading, isRefetching, refetch } = useQuery({
     queryKey: ["school-students", schoolId, query],
     queryFn: () => api.school.students(schoolId, query ? `?q=${encodeURIComponent(query)}` : ""),
   });
@@ -31,25 +31,27 @@ export default function StudentsScreen() {
   });
 
   return (
-    <ScreenContainer>
-      <TextInput style={styles.search} value={query} onChangeText={setQuery} placeholder="بحث بالاسم أو الكود" />
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      <TextInput style={styles.search} value={query} onChangeText={setQuery} placeholder="بحث بالاسم أو الكود" placeholderTextColor={colors.gray400} />
 
       <Button title="📥 استيراد دفعة من Excel" variant="outline" onPress={() => router.push("/(school)/import-students")} />
       <View style={{ height: 10 }} />
 
-      <FlatList
-        data={students}
-        keyExtractor={(s) => s.id}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => router.push(`/(school)/student/${item.id}`)}>
-            <Card>
+      {isLoading ? null : !students?.length ? (
+        <EmptyState icon="🎒" title={query ? "لا نتائج مطابقة" : "لا يوجد طلاب بعد"} />
+      ) : (
+        <FlatList
+          data={students}
+          keyExtractor={(s) => s.id}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <Card onPress={() => router.push(`/(school)/student/${item.id}`)}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.meta}>{item.grade} · {item.code}</Text>
             </Card>
-          </TouchableOpacity>
-        )}
-      />
+          )}
+        />
+      )}
 
       {showAdd ? (
         <View style={styles.addForm}>

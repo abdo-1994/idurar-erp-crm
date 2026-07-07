@@ -116,6 +116,13 @@ export function createApiClient(config: ApiClientConfig) {
 
     notifications: {
       markRead: (id: string) => http.put(`/notifications/${id}/read`),
+      mine: () => http.get<Notification[]>("/notifications/mine"),
+      updatePrefs: (body: Record<string, unknown>) =>
+        http.put<{ ok: true; notificationPrefs: unknown }>("/users/me/notification-prefs", body),
+    },
+
+    support: {
+      contact: (body: { message: string; channel?: string }) => http.post("/support/contact", body),
     },
 
     parent: {

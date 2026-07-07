@@ -3,7 +3,7 @@ import { Text, TextInput, View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, EmptyState, ScreenContainer, SectionHeader, StatusPill, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader, StatusPill, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -15,7 +15,13 @@ export default function DriverHomeScreen() {
   const [breakdownNotes, setBreakdownNotes] = useState("");
   const [sending, setSending] = useState(false);
 
-  const { data: bus } = useQuery({ queryKey: ["driver-my-bus"], queryFn: () => api.driver.myBus() as Promise<any | null> });
+  const {
+    data: bus,
+    isLoading,
+    isError,
+    isRefetching,
+    refetch,
+  } = useQuery({ queryKey: ["driver-my-bus"], queryFn: () => api.driver.myBus() as Promise<any | null> });
 
   const breakdownMutation = useMutation({
     mutationFn: () => api.driver.reportBreakdown(bus!.id, breakdownNotes),
@@ -24,6 +30,7 @@ export default function DriverHomeScreen() {
       setBreakdownNotes("");
       queryClient.invalidateQueries({ queryKey: ["driver-my-bus"] });
     },
+    onError: () => Alert.alert("تعذر الإرسال", "تحقق من الاتصال بالإنترنت وحاول مرة أخرى"),
   });
 
   async function sendSos() {
@@ -54,10 +61,14 @@ export default function DriverHomeScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
       <Text style={styles.greeting}>مرحباً، {user.name} 👋</Text>
 
-      {!bus ? (
+      {isLoading ? (
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState onRetry={refetch} />
+      ) : !bus ? (
         <EmptyState icon="🚌" title="لا يوجد باص مخصص لك حالياً" subtitle="تواصل مع إدارة المدرسة" />
       ) : (
         <Card accentColor={bus.outOfService ? colors.red : colors.tealMid}>
@@ -102,7 +113,10 @@ export default function DriverHomeScreen() {
         <Button title="🆘 إرسال تنبيه طوارئ SOS" color={colors.red} onPress={confirmSos} loading={sending} />
       </Card>
 
+      <Button title="🔔 الإشعارات" variant="outline" onPress={() => router.push("/(driver)/notifications")} />
       <Button title="👤 حسابي" variant="outline" onPress={() => router.push("/(driver)/profile")} />
+      <Button title="⚙️ الإعدادات" variant="outline" onPress={() => router.push("/(driver)/settings")} />
+      <Button title="💬 الدعم الفني" variant="outline" onPress={() => router.push("/(driver)/contact")} />
     </ScreenContainer>
   );
 }

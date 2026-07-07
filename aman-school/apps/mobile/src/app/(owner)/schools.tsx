@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Text, TextInput, View, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "info"> = {
@@ -19,9 +19,17 @@ export default function OwnerSchoolsScreen() {
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [packageId, setPackageId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const { data: schools } = useQuery({ queryKey: ["owner-schools"], queryFn: () => api.owner.schools() });
+  const { data: schools, isLoading, isRefetching, refetch } = useQuery({ queryKey: ["owner-schools"], queryFn: () => api.owner.schools() });
   const { data: packages } = useQuery({ queryKey: ["owner-packages"], queryFn: () => api.owner.packages() as Promise<any[]> });
+
+  const filteredSchools = useMemo(() => {
+    if (!schools) return schools;
+    const q = query.trim().toLowerCase();
+    if (!q) return schools;
+    return schools.filter((s: any) => s.name.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q));
+  }, [schools, query]);
 
   const registerMutation = useMutation({
     mutationFn: () => api.owner.registerSchool({ name, slug, adminName, adminEmail, packageId: packageId! }),
@@ -34,29 +42,33 @@ export default function OwnerSchoolsScreen() {
   });
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
       <Button
         title="🚀 معالج الإطلاق الكامل (5 خطوات)"
         onPress={() => router.push("/(owner)/onboarding")}
         color={colors.purpleMid}
       />
       <View style={{ height: 12 }} />
-      <FlatList
-        data={schools}
-        keyExtractor={(s) => s.id}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => router.push(`/(owner)/school/${item.id}`)}>
-            <Card accentColor={colors.purpleMid}>
+      <TextInput style={styles.search} value={query} onChangeText={setQuery} placeholder="بحث بالاسم أو المعرّف" placeholderTextColor={colors.gray400} />
+
+      {isLoading ? null : !filteredSchools?.length ? (
+        <EmptyState icon="🏫" title={query ? "لا نتائج مطابقة" : "لا توجد مدارس مسجّلة بعد"} />
+      ) : (
+        <FlatList
+          data={filteredSchools}
+          keyExtractor={(s) => s.id}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <Card accentColor={colors.purpleMid} onPress={() => router.push(`/(owner)/school/${item.id}`)}>
               <View style={styles.row}>
                 <Text style={styles.name}>{item.name}</Text>
                 <StatusPill label={STATUS_LABEL[item.subscriptionStatus] ?? item.subscriptionStatus} tone={STATUS_TONE[item.subscriptionStatus] ?? "info"} />
               </View>
               <Text style={styles.meta}>{(item as any).package?.name ?? "بدون باقة"}</Text>
             </Card>
-          </TouchableOpacity>
-        )}
-      />
+          )}
+        />
+      )}
 
       {showAdd ? (
         <View style={{ marginTop: 8 }}>
@@ -87,6 +99,10 @@ export default function OwnerSchoolsScreen() {
 }
 
 const styles = StyleSheet.create({
+  search: {
+    borderWidth: 1, borderColor: colors.gray200, borderRadius: 10, paddingHorizontal: 14,
+    paddingVertical: 10, fontSize: 14, backgroundColor: colors.white, marginBottom: 12,
+  },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   name: { fontWeight: "700", color: colors.navy, fontSize: 14 },
   meta: { color: colors.gray600, fontSize: 12, marginTop: 4 },

@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, EmptyState, ScreenContainer, StatusPill, SubscriptionBanner, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ErrorState, LoadingState, ScreenContainer, StatusPill, SubscriptionBanner, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -11,7 +11,7 @@ const STATUS_TONE: Record<string, "neutral" | "warning" | "success"> = { home: "
 export default function ParentHomeScreen() {
   const router = useRouter();
   const user = useSessionStore((s) => s.user)!;
-  const { data: children, isLoading, refetch } = useQuery({
+  const { data: children, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["parent-children-status", user.id],
     queryFn: () => api.parent.childrenStatus(user.id),
   });
@@ -21,7 +21,7 @@ export default function ParentHomeScreen() {
   });
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
       <Text style={styles.greeting}>مرحباً، {user.name} 👋</Text>
       <SubscriptionBanner endsAt={subscription?.endsAt} />
 
@@ -30,7 +30,9 @@ export default function ParentHomeScreen() {
       </TouchableOpacity>
 
       {isLoading ? (
-        <Text style={styles.muted}>جاري التحميل...</Text>
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState onRetry={refetch} />
       ) : !children?.length ? (
         <EmptyState icon="👨‍👩‍👦" title="لا يوجد أبناء مضافون" subtitle="اضغط + لإضافة ابنك" />
       ) : (
@@ -39,27 +41,25 @@ export default function ParentHomeScreen() {
           keyExtractor={(c) => c.id}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => router.push(`/(parent)/child/${item.id}`)}>
-              <Card accentColor={colors.greenMid}>
-                <View style={styles.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.school}>{(item as any).school?.name ?? ""}</Text>
-                  </View>
-                  <StatusPill label={STATUS_LABEL[item.status] ?? item.status} tone={STATUS_TONE[item.status] ?? "neutral"} />
+            <Card accentColor={colors.greenMid} onPress={() => router.push(`/(parent)/child/${item.id}`)}>
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.school}>{(item as any).school?.name ?? ""}</Text>
                 </View>
-                {item.busId ? (
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      router.push(`/(parent)/tracking/${item.busId}`);
-                    }}
-                  >
-                    <Text style={styles.trackLink}>📍 تتبع الباص مباشرة</Text>
-                  </TouchableOpacity>
-                ) : null}
-              </Card>
-            </TouchableOpacity>
+                <StatusPill label={STATUS_LABEL[item.status] ?? item.status} tone={STATUS_TONE[item.status] ?? "neutral"} />
+              </View>
+              {item.busId ? (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    router.push(`/(parent)/tracking/${item.busId}`);
+                  }}
+                >
+                  <Text style={styles.trackLink}>📍 تتبع الباص مباشرة</Text>
+                </TouchableOpacity>
+              ) : null}
+            </Card>
           )}
         />
       )}
@@ -70,7 +70,6 @@ export default function ParentHomeScreen() {
       <Button title="💳 حالة وسائل الدفع" variant="outline" onPress={() => router.push("/(parent)/payment-status")} />
       <Button title="التواصل والدعم" variant="outline" onPress={() => router.push("/(parent)/contact")} />
       <Button title="حسابي" variant="outline" onPress={() => router.push("/(parent)/profile")} />
-      <Button title="تحديث" variant="outline" onPress={() => refetch()} />
     </ScreenContainer>
   );
 }

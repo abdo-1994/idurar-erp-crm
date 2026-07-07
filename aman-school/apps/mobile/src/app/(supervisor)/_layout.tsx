@@ -37,6 +37,7 @@ export default function SupervisorLayout() {
         <Stack.Screen name="not-collected/[studentId]" options={{ title: "لم يُستلم الطالب", headerBackVisible: false }} />
         <Stack.Screen name="medical-alert/[studentId]" options={{ title: "طوارئ طبية" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

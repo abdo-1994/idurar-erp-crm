@@ -37,6 +37,8 @@ export default function SysadminLayout() {
         <Stack.Screen name="backup" options={{ title: "النسخ الاحتياطي" }} />
         <Stack.Screen name="security" options={{ title: "إعدادات الأمان" }} />
         <Stack.Screen name="config" options={{ title: "الإعدادات التقنية" }} />
+        <Stack.Screen name="profile" options={{ title: "حسابي" }} />
+        <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>
   );

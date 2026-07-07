@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { Text, TextInput, View, StyleSheet, FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { Button, Card, EmptyState, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -15,7 +15,7 @@ export default function BusesScreen() {
   const [plateNumber, setPlateNumber] = useState("");
   const [capacity, setCapacity] = useState("30");
 
-  const { data: buses } = useQuery({ queryKey: ["school-buses", schoolId], queryFn: () => api.school.buses(schoolId) });
+  const { data: buses, isLoading, isRefetching, refetch } = useQuery({ queryKey: ["school-buses", schoolId], queryFn: () => api.school.buses(schoolId) });
 
   const createMutation = useMutation({
     mutationFn: () => api.school.createBus(schoolId, { busNumber, plateNumber, capacity: Number(capacity) }),
@@ -28,14 +28,16 @@ export default function BusesScreen() {
   });
 
   return (
-    <ScreenContainer>
-      <FlatList
-        data={buses}
-        keyExtractor={(b) => b.id}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => router.push(`/(school)/bus/${item.id}`)}>
-            <Card accentColor={colors.amber}>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      {isLoading ? null : !buses?.length ? (
+        <EmptyState icon="🚌" title="لا توجد باصات بعد" />
+      ) : (
+        <FlatList
+          data={buses}
+          keyExtractor={(b) => b.id}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <Card accentColor={colors.amber} onPress={() => router.push(`/(school)/bus/${item.id}`)}>
               <View style={styles.row}>
                 <Text style={styles.name}>باص {item.busNumber}</Text>
                 <StatusPill
@@ -45,9 +47,9 @@ export default function BusesScreen() {
               </View>
               <Text style={styles.meta}>{item.plateNumber} · السعة {item.capacity}</Text>
             </Card>
-          </TouchableOpacity>
-        )}
-      />
+          )}
+        />
+      )}
 
       {showAdd ? (
         <View style={{ marginTop: 8 }}>

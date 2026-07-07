@@ -1,7 +1,7 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ScreenContainer, SubscriptionBanner, colors } from "@aman-school/shared-ui";
+import { Card, ErrorState, ScreenContainer, SubscriptionBanner, colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -18,13 +18,14 @@ const LINKS = [
   { href: "/(school)/routes", label: "المسارات", icon: "🛣️" },
   { href: "/(school)/invoices", label: "الفواتير", icon: "🧾" },
   { href: "/(school)/payment-status", label: "حالة الدفع", icon: "💳" },
+  { href: "/(school)/contact", label: "الدعم الفني", icon: "💬" },
   { href: "/(school)/settings", label: "الإعدادات", icon: "⚙️" },
 ];
 
 export default function SchoolDashboardScreen() {
   const router = useRouter();
   const schoolId = useSessionStore((s) => s.user?.schoolId)!;
-  const { data } = useQuery({
+  const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["school-dashboard", schoolId],
     queryFn: () => api.school.dashboardSummary(schoolId) as Promise<{
       activeTripsCount: number; todayTripsTotal: number; todayTripsCompleted: number;
@@ -34,35 +35,35 @@ export default function SchoolDashboardScreen() {
   const { data: school } = useQuery({ queryKey: ["school-info", schoolId], queryFn: () => api.school.get(schoolId) as Promise<any> });
 
   return (
-    <ScreenContainer>
+    <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
       <SubscriptionBanner status={school?.subscriptionStatus} endsAt={school?.subscriptionEndsAt} gracePeriodEndsAt={school?.gracePeriodEndsAt} />
 
-      <View style={styles.statsGrid}>
-        {[
-          { label: "رحلات نشطة", value: data?.activeTripsCount },
-          { label: "طلاب في الطريق", value: data?.studentsOnTheWay },
-          { label: "إجمالي الطلاب", value: data?.totalStudents },
-          { label: "إجمالي الباصات", value: data?.totalBuses },
-        ].map((s) => (
-          <Card key={s.label} style={styles.statCard}>
-            <Text style={styles.statValue}>{s.value ?? "-"}</Text>
-            <Text style={styles.statLabel}>{s.label}</Text>
+      {isError ? (
+        <ErrorState onRetry={refetch} />
+      ) : (
+        <View style={styles.statsGrid}>
+          {[
+            { label: "رحلات نشطة", value: data?.activeTripsCount },
+            { label: "طلاب في الطريق", value: data?.studentsOnTheWay },
+            { label: "إجمالي الطلاب", value: data?.totalStudents },
+            { label: "إجمالي الباصات", value: data?.totalBuses },
+          ].map((s) => (
+            <Card key={s.label} style={styles.statCard}>
+              <Text style={styles.statValue}>{isLoading ? "…" : s.value ?? "-"}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </Card>
+          ))}
+        </View>
+      )}
+
+      <View style={styles.linksGrid}>
+        {LINKS.map((l) => (
+          <Card key={l.href} style={styles.linkCard} accentColor={colors.amber} onPress={() => router.push(l.href as never)}>
+            <Text style={styles.linkIcon}>{l.icon}</Text>
+            <Text style={styles.linkLabel}>{l.label}</Text>
           </Card>
         ))}
       </View>
-
-      <ScrollView contentContainerStyle={styles.linksGrid}>
-        {LINKS.map((l) => (
-          <Card key={l.href} style={styles.linkCard} accentColor={colors.amber}>
-            <Text style={styles.linkIcon} onPress={() => router.push(l.href as never)}>
-              {l.icon}
-            </Text>
-            <Text style={styles.linkLabel} onPress={() => router.push(l.href as never)}>
-              {l.label}
-            </Text>
-          </Card>
-        ))}
-      </ScrollView>
     </ScreenContainer>
   );
 }
