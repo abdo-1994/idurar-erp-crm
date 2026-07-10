@@ -1,12 +1,14 @@
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { LogOut, Handshake } from "lucide-react-native";
+import { LogOut, Handshake, School2, Wallet, Megaphone, User } from "lucide-react-native";
 import { Card, ErrorState, GradientHeader, LoadingState, ScreenContainer, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 import { useLogout } from "../../features/shared/RoleGuardLayout";
 
+/** Partner-01: partner portal home — independent of the owner role group,
+ * with its own cyan brand identity per the exact gradient spec. */
 export default function PartnerDashboardScreen() {
   const router = useRouter();
   const logout = useLogout();
@@ -14,7 +16,7 @@ export default function PartnerDashboardScreen() {
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["partner-dashboard", user.partnerId],
     queryFn: () => api.partner.dashboard(user.partnerId!) as Promise<{
-      partner: { name: string; region: string; schools: any[] };
+      partner: { name: string; region: string; commissionPercent: number; tier: { labelAr: string } | null; schools: any[] };
       monthlyRevenue: number; commission: number; schoolsCount: number;
     }>,
     enabled: !!user.partnerId,
@@ -53,13 +55,30 @@ export default function PartnerDashboardScreen() {
         </View>
       )}
 
-      <Card accentColor={colors.tealMid}>
+      <Card accentColor={roleGradients.partner[0]}>
         <View style={styles.row}><Text style={styles.label}>الإيراد الشهري لمدارسه</Text><Text style={styles.value}>{data?.monthlyRevenue ?? "-"} ر.ي</Text></View>
+        <View style={styles.row}><Text style={styles.label}>نسبة العمولة</Text><Text style={styles.value}>{data?.partner?.commissionPercent ?? "-"}%</Text></View>
+        <View style={styles.row}><Text style={styles.label}>مستوى الشراكة</Text><Text style={styles.value}>{data?.partner?.tier?.labelAr ?? "—"}</Text></View>
       </Card>
 
-      <TouchableOpacity onPress={() => router.push("/(owner)/profile")}>
-        <Card accentColor={colors.tealMid}>
-          <Text style={styles.linkText}>👤 حسابي</Text>
+      <TouchableOpacity onPress={() => router.push("/(partner)/schools")}>
+        <Card accentColor={roleGradients.partner[0]}>
+          <View style={styles.linkRow}><School2 size={18} color={colors.navy} /><Text style={styles.linkText}>مدارسي المُحالة</Text></View>
+        </Card>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(partner)/commissions")}>
+        <Card accentColor={roleGradients.partner[0]}>
+          <View style={styles.linkRow}><Wallet size={18} color={colors.navy} /><Text style={styles.linkText}>العمولات والأرباح</Text></View>
+        </Card>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(partner)/marketing")}>
+        <Card accentColor={roleGradients.partner[0]}>
+          <View style={styles.linkRow}><Megaphone size={18} color={colors.navy} /><Text style={styles.linkText}>حقيبة التسويق</Text></View>
+        </Card>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(partner)/profile")}>
+        <Card accentColor={roleGradients.partner[0]}>
+          <View style={styles.linkRow}><User size={18} color={colors.navy} /><Text style={styles.linkText}>حسابي</Text></View>
         </Card>
       </TouchableOpacity>
     </ScreenContainer>
@@ -76,5 +95,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 6 },
   label: { color: colors.gray600, fontSize: 13 },
   value: { color: colors.navy, fontWeight: "700", fontSize: 13 },
-  linkText: { fontWeight: "700", color: colors.navy, fontSize: 14, textAlign: "center" },
+  linkRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  linkText: { fontWeight: "700", color: colors.navy, fontSize: 14 },
 });

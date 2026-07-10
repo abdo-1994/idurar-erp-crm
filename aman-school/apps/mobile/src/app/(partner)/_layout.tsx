@@ -2,20 +2,21 @@ import { Stack } from "expo-router";
 import { colors, HeaderGradientBackground, roleGradients } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
 
-export default function DriverLayout() {
+export default function PartnerLayout() {
   return (
-    <RoleGuardLayout allow={["driver"]}>
+    <RoleGuardLayout allow={["partner"]}>
       <Stack
         screenOptions={{
-          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.driver} />,
+          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.partner} />,
           headerTintColor: colors.white,
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="home" options={{ headerShown: false }} />
-        <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
+        <Stack.Screen name="dashboard" options={{ headerShown: false }} />
+        <Stack.Screen name="schools" options={{ title: "مدارسي المُحالة" }} />
+        <Stack.Screen name="commissions" options={{ title: "العمولات والأرباح" }} />
+        <Stack.Screen name="marketing" options={{ title: "حقيبة التسويق" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
-        <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
       </Stack>
     </RoleGuardLayout>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Text, TextInput, StyleSheet } from "react-native";
+import { Text, TextInput } from "react-native";
 import { useRouter } from "expo-router";
-import { Button, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { Truck } from "lucide-react-native";
+import { Button, GradientAuthScreen, colors, gradientAuthStyles, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { HttpError } from "@aman-school/api-client";
 
@@ -26,33 +27,22 @@ export default function DriverLoginScreen() {
   }
 
   return (
-    <ScreenContainer>
-      <Text style={styles.title}>أدخل رمز الموظف (السائق)</Text>
+    <GradientAuthScreen
+      gradient={roleGradients.driver}
+      icon={<Truck size={40} color={colors.white} />}
+      title="دخول السائق"
+      subtitle="أدخل رمز الموظف"
+    >
       <TextInput
-        style={styles.input}
+        style={gradientAuthStyles.input}
         value={employeeCode}
         onChangeText={setEmployeeCode}
         autoCapitalize="characters"
         placeholder="DRV-1001"
+        placeholderTextColor="rgba(255,255,255,0.35)"
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title="متابعة" onPress={onSubmit} loading={loading} disabled={!employeeCode} />
-    </ScreenContainer>
+      {error ? <Text style={gradientAuthStyles.error}>{error}</Text> : null}
+      <Button title="متابعة" onPress={onSubmit} loading={loading} disabled={!employeeCode} size="lg" />
+    </GradientAuthScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 16, textAlign: "center" },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    fontSize: 18,
-    textAlign: "center",
-    backgroundColor: colors.white,
-    marginBottom: 14,
-  },
-  error: { color: colors.red, fontSize: 12, marginBottom: 12, textAlign: "center" },
-});

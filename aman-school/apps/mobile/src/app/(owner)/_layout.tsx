@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity } from "react-native";
 import { Stack, useRouter } from "expo-router";
-import { colors } from "@aman-school/shared-ui";
+import { colors, HeaderGradientBackground, roleGradients } from "@aman-school/shared-ui";
 import { RoleGuardLayout, useLogout } from "../../features/shared/RoleGuardLayout";
 
 function LogoutHeaderButton() {
@@ -21,10 +21,10 @@ function LogoutHeaderButton() {
 
 export default function OwnerLayout() {
   return (
-    <RoleGuardLayout allow={["owner", "partner"]}>
+    <RoleGuardLayout allow={["owner"]}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.purpleMid },
+          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.owner} />,
           headerTintColor: colors.white,
           headerTitleAlign: "center",
         }}
@@ -41,7 +41,6 @@ export default function OwnerLayout() {
         <Stack.Screen name="partner-tiers" options={{ title: "مستويات عمولة الشركاء" }} />
         <Stack.Screen name="analytics" options={{ title: "تحليلات المنصة" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات النظام", headerRight: LogoutHeaderButton }} />
-        <Stack.Screen name="partner-dashboard" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="users" options={{ title: "مستخدمو المنصة" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات التنفيذية" }} />

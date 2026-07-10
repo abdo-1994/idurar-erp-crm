@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { colors } from "@aman-school/shared-ui";
+import { colors, HeaderGradientBackground, roleGradients } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
 
 export default function SysadminLayout() {
@@ -7,7 +7,7 @@ export default function SysadminLayout() {
     <RoleGuardLayout allow={["sysadmin", "owner"]}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.navy },
+          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.sysadmin} />,
           headerTintColor: colors.white,
           headerTitleAlign: "center",
         }}

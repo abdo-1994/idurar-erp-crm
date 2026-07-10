@@ -9,5 +9,7 @@ export * from "./SubscriptionBanner";
 export * from "./LoadingState";
 export * from "./ErrorState";
 export * from "./GradientHeader";
+export * from "./HeaderGradientBackground";
 export * from "./Toast";
 export * from "./BottomSheet";
+export * from "./GradientAuthScreen";

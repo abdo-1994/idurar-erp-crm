@@ -32,17 +32,20 @@ export const colors = {
   white: "#FFFFFF",
 } as const;
 
-/** Per-role accent color, matching the original design doc's app colors. */
-export const roleColors = {
-  owner: colors.purpleMid,
-  sysadmin: colors.navy,
-  partner: colors.orangeMid,
-  school_admin: colors.amber,
-  ops_room: colors.redMid,
-  supervisor: colors.blueMid,
-  parent: colors.greenMid,
-  driver: colors.tealMid,
+/** Per-role accent color — solid-UI counterpart (cards, buttons, status dots)
+ * to the gradient headers below. Derived from each role's own gradient's lead
+ * stop so solid accents and gradient headers always agree for the same role. */
+const roleAccentSource = {
+  parent: "#2563EB",
+  supervisor: "#10B981",
+  driver: "#0D9488",
+  school_admin: "#9333EA",
+  ops_room: "#334155",
+  owner: "#D97706",
+  partner: "#0891B2",
+  sysadmin: "#475569",
 } as const;
+export const roleColors: Record<keyof typeof roleAccentSource, string> = roleAccentSource;
 
 export const spacing = (n: number) => n * 4;
 
@@ -58,17 +61,20 @@ export const radius = {
   pill: 999,
 } as const;
 
-/** Per-role hero-header gradients (two-stop, top-to-bottom) — the dark,
- * saturated backdrop behind each role's dashboard title/avatar block. */
-export const roleGradients: Record<keyof typeof roleColors, [string, string]> = {
-  owner: ["#1E1B14", "#78350F"],
-  sysadmin: ["#0B2447", "#0B2447"],
-  partner: ["#155E63", "#0E4A4E"],
-  school_admin: ["#6D28D9", "#3B0764"],
-  ops_room: ["#1E293B", "#0F172A"],
-  supervisor: ["#047857", "#064E3B"],
-  parent: ["#1D4ED8", "#1E3A8A"],
-  driver: ["#115E59", "#042F2E"],
+/** Per-role hero-header gradients (two-stop, top-to-bottom) — matches the
+ * exact Tailwind color-stop spec: parent blue-600→800, supervisor
+ * emerald-500→700, driver teal-600→800, school_admin purple-600→800,
+ * ops_room slate-700→900 (dark mode), owner amber-600→800, partner
+ * cyan-600→800, sysadmin slate-600→800 (distinct from ops_room). */
+export const roleGradients: Record<keyof typeof roleAccentSource, [string, string]> = {
+  parent: [roleAccentSource.parent, "#1E40AF"],
+  supervisor: [roleAccentSource.supervisor, "#047857"],
+  driver: [roleAccentSource.driver, "#115E59"],
+  school_admin: [roleAccentSource.school_admin, "#6B21A8"],
+  ops_room: [roleAccentSource.ops_room, "#0F172A"],
+  owner: [roleAccentSource.owner, "#92400E"],
+  partner: [roleAccentSource.partner, "#155E75"],
+  sysadmin: [roleAccentSource.sysadmin, "#1E293B"],
 };
 
 /** Elevation presets (iOS shadow* + Android elevation together) — gives cards

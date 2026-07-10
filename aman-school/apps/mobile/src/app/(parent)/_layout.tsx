@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { colors } from "@aman-school/shared-ui";
+import { colors, HeaderGradientBackground, roleGradients } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
 
 export default function ParentLayout() {
@@ -7,7 +7,7 @@ export default function ParentLayout() {
     <RoleGuardLayout allow={["parent"]}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.greenMid },
+          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.parent} />,
           headerTintColor: colors.white,
           headerTitleAlign: "center",
         }}

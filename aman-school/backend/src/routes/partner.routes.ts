@@ -16,7 +16,7 @@ partnerRouter.get(
 
     const partner = await prisma.partner.findUnique({
       where: { id: req.params.id },
-      include: { schools: { include: { package: true } } },
+      include: { schools: { include: { package: true } }, tier: true },
     });
     if (!partner) throw notFound("Partner");
 
