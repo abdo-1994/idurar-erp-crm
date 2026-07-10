@@ -7,7 +7,7 @@ export const ROLE_HOME: Record<Role, string> = {
   school_admin: "/(school)/dashboard",
   ops_room: "/(operations)/control-room",
   owner: "/(owner)/dashboard",
-  partner: "/(owner)/partner-dashboard",
+  partner: "/(partner)/dashboard",
   sysadmin: "/(sysadmin)/dashboard",
   driver: "/(driver)/home",
 };

@@ -13,7 +13,8 @@
     "react-native-safe-area-context": "*",
     "react-native-svg": "*",
     "lucide-react-native": "*",
-    "expo-linear-gradient": "*"
+    "expo-linear-gradient": "*",
+    "expo-router": "*"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

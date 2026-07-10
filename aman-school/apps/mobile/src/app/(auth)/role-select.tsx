@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ChevronLeft, User, Smartphone, Truck, ShieldCheck, Activity, DollarSign, Server, Handshake, ShieldQuestion } from "lucide-react-native";
-import { colors, ScreenContainer } from "@aman-school/shared-ui";
+import { colors, roleGradients, ScreenContainer } from "@aman-school/shared-ui";
 import { ROLE_LABELS_AR, type Role } from "@aman-school/types";
 
 const ROLE_ROUTES: Record<Role, string> = {
@@ -38,17 +38,6 @@ const ROLE_ICONS: Record<Role, any> = {
   partner: Handshake,
 };
 
-const ROLE_GRADIENTS: Record<Role, [string, string]> = {
-  parent: ["#2563EB", "#1E3A8A"],
-  supervisor: ["#059669", "#065F46"],
-  driver: ["#0D9488", "#0F766E"],
-  school_admin: ["#9333EA", "#6B21A8"],
-  ops_room: ["#334155", "#0F172A"],
-  owner: ["#D97706", "#92400E"],
-  sysadmin: ["#334155", "#0B2447"],
-  partner: ["#0E7490", "#155E75"],
-};
-
 const ROLE_ORDER: Role[] = ["parent", "supervisor", "driver", "school_admin", "ops_room", "owner", "sysadmin", "partner"];
 
 export default function RoleSelectScreen() {
@@ -74,7 +63,7 @@ export default function RoleSelectScreen() {
               onPress={() => router.push(ROLE_ROUTES[role] as never)}
               activeOpacity={0.8}
             >
-              <LinearGradient colors={ROLE_GRADIENTS[role]} style={styles.iconChip}>
+              <LinearGradient colors={roleGradients[role]} style={styles.iconChip}>
                 <Icon size={24} color={colors.white} />
               </LinearGradient>
               <View style={styles.rowText}>

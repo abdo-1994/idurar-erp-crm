@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { colors } from "@aman-school/shared-ui";
+import { colors, HeaderGradientBackground, roleGradients } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
 
 export default function SupervisorLayout() {
@@ -7,7 +7,7 @@ export default function SupervisorLayout() {
     <RoleGuardLayout allow={["supervisor"]}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.blueMid },
+          headerBackground: () => <HeaderGradientBackground gradient={roleGradients.supervisor} />,
           headerTintColor: colors.white,
           headerTitleAlign: "center",
         }}
