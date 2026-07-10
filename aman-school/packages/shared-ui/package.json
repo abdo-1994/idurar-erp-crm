@@ -10,7 +10,10 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-safe-area-context": "*"
+    "react-native-safe-area-context": "*",
+    "react-native-svg": "*",
+    "lucide-react-native": "*",
+    "expo-linear-gradient": "*"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

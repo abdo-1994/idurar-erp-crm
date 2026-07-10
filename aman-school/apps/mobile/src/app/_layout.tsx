@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { ToastProvider } from "@aman-school/shared-ui";
 import { queryClient } from "../lib/queryClient";
 import { useSessionStore } from "../store/session";
 
@@ -21,7 +22,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <Slot />
+        <ToastProvider>
+          <Slot />
+        </ToastProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

@@ -12,7 +12,7 @@ export default function SchoolLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="dashboard" options={{ title: "لوحة المدرسة" }} />
+        <Stack.Screen name="dashboard" options={{ headerShown: false }} />
         <Stack.Screen name="students" options={{ title: "إدارة الطلاب" }} />
         <Stack.Screen name="student/[id]" options={{ title: "تفاصيل الطالب" }} />
         <Stack.Screen name="import-students" options={{ title: "استيراد الطلاب من Excel" }} />

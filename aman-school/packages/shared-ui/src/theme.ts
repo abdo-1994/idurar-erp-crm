@@ -53,8 +53,23 @@ export const radius = {
   md: 12,
   lg: 16,
   xl: 22,
+  xxl: 32,
+  hero: 48,
   pill: 999,
 } as const;
+
+/** Per-role hero-header gradients (two-stop, top-to-bottom) — the dark,
+ * saturated backdrop behind each role's dashboard title/avatar block. */
+export const roleGradients: Record<keyof typeof roleColors, [string, string]> = {
+  owner: ["#1E1B14", "#78350F"],
+  sysadmin: ["#0B2447", "#0B2447"],
+  partner: ["#155E63", "#0E4A4E"],
+  school_admin: ["#6D28D9", "#3B0764"],
+  ops_room: ["#1E293B", "#0F172A"],
+  supervisor: ["#047857", "#064E3B"],
+  parent: ["#1D4ED8", "#1E3A8A"],
+  driver: ["#115E59", "#042F2E"],
+};
 
 /** Elevation presets (iOS shadow* + Android elevation together) — gives cards
  * and buttons a soft "lifted" look instead of a flat bordered box. */

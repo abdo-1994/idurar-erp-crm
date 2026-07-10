@@ -1,9 +1,11 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ErrorState, ScreenContainer, SubscriptionBanner, colors } from "@aman-school/shared-ui";
+import { LogOut, ShieldCheck } from "lucide-react-native";
+import { Card, ErrorState, GradientHeader, ScreenContainer, SubscriptionBanner, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
+import { useLogout } from "../../features/shared/RoleGuardLayout";
 
 const LINKS = [
   { href: "/(school)/students", label: "الطلاب", icon: "🎒" },
@@ -24,6 +26,7 @@ const LINKS = [
 
 export default function SchoolDashboardScreen() {
   const router = useRouter();
+  const logout = useLogout();
   const schoolId = useSessionStore((s) => s.user?.schoolId)!;
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["school-dashboard", schoolId],
@@ -36,6 +39,23 @@ export default function SchoolDashboardScreen() {
 
   return (
     <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.school_admin}
+          title={school?.name ?? "لوحة المدرسة"}
+          subtitle="إدارة الأسطول والعمليات"
+          icon={<ShieldCheck size={20} color={colors.white} />}
+          right={
+            <TouchableOpacity
+              style={styles.logoutBtn}
+              onPress={async () => { await logout(); router.replace("/(auth)/role-select"); }}
+            >
+              <LogOut size={20} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
+
       <SubscriptionBanner status={school?.subscriptionStatus} endsAt={school?.subscriptionEndsAt} gracePeriodEndsAt={school?.gracePeriodEndsAt} />
 
       {isError ? (
@@ -69,6 +89,8 @@ export default function SchoolDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  logoutBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   statCard: { width: "47%", alignItems: "center", paddingVertical: 16 },
   statValue: { fontSize: 22, fontWeight: "800", color: colors.amber },

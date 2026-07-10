@@ -1,16 +1,6 @@
-import { Text, TouchableOpacity } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { colors } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
-
-function SettingsHeaderButton() {
-  const router = useRouter();
-  return (
-    <TouchableOpacity onPress={() => router.push("/(supervisor)/settings")} hitSlop={10}>
-      <Text style={{ color: colors.white, fontSize: 20 }}>⚙️</Text>
-    </TouchableOpacity>
-  );
-}
 
 export default function SupervisorLayout() {
   return (
@@ -22,7 +12,7 @@ export default function SupervisorLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="trip-select" options={{ title: "اختيار الرحلة", headerRight: SettingsHeaderButton }} />
+        <Stack.Screen name="trip-select" options={{ headerShown: false }} />
         <Stack.Screen name="student-list" options={{ title: "قائمة الطلاب" }} />
         <Stack.Screen name="scan" options={{ title: "مسح الطلاب", headerBackVisible: false }} />
         <Stack.Screen name="manual-entry" options={{ title: "إدخال يدوي" }} />

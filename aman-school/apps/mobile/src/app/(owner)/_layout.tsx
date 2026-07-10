@@ -29,7 +29,7 @@ export default function OwnerLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="dashboard" options={{ title: "لوحة المالك", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="dashboard" options={{ headerShown: false }} />
         <Stack.Screen name="schools" options={{ title: "إدارة المدارس" }} />
         <Stack.Screen name="onboarding" options={{ title: "معالج إطلاق مدرسة جديدة" }} />
         <Stack.Screen name="school/[id]" options={{ title: "تفاصيل المدرسة" }} />
@@ -41,7 +41,7 @@ export default function OwnerLayout() {
         <Stack.Screen name="partner-tiers" options={{ title: "مستويات عمولة الشركاء" }} />
         <Stack.Screen name="analytics" options={{ title: "تحليلات المنصة" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات النظام", headerRight: LogoutHeaderButton }} />
-        <Stack.Screen name="partner-dashboard" options={{ title: "لوحة الشريك", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="partner-dashboard" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="users" options={{ title: "مستخدمو المنصة" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات التنفيذية" }} />

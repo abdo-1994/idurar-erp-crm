@@ -1,24 +1,6 @@
-import { Text, TouchableOpacity } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { colors } from "@aman-school/shared-ui";
 import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
-import { useLogout } from "../../features/shared/RoleGuardLayout";
-
-function LogoutHeaderButton() {
-  const router = useRouter();
-  const logout = useLogout();
-  return (
-    <TouchableOpacity
-      hitSlop={10}
-      onPress={async () => {
-        await logout();
-        router.replace("/(auth)/role-select");
-      }}
-    >
-      <Text style={{ color: colors.white, fontSize: 13, fontWeight: "700" }}>خروج</Text>
-    </TouchableOpacity>
-  );
-}
 
 export default function ParentLayout() {
   return (
@@ -30,7 +12,7 @@ export default function ParentLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="home" options={{ title: "أمان سكول", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="add-student" options={{ title: "إضافة ابن" }} />
         <Stack.Screen name="child/[id]" options={{ title: "تفاصيل الابن" }} />
         <Stack.Screen name="medical/[id]" options={{ title: "الملف الطبي" }} />
