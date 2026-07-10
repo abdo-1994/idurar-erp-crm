@@ -1,15 +1,18 @@
 import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, EmptyState, ErrorState, LoadingState, ScreenContainer, StatusPill, SubscriptionBanner, colors } from "@aman-school/shared-ui";
+import { Bell, LogOut, User } from "lucide-react-native";
+import { Button, Card, EmptyState, ErrorState, GradientHeader, LoadingState, ScreenContainer, StatusPill, SubscriptionBanner, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
+import { useLogout } from "../../features/shared/RoleGuardLayout";
 
 const STATUS_LABEL: Record<string, string> = { home: "في المنزل", on_the_way: "في الطريق", at_school: "في المدرسة" };
 const STATUS_TONE: Record<string, "neutral" | "warning" | "success"> = { home: "neutral", on_the_way: "warning", at_school: "success" };
 
 export default function ParentHomeScreen() {
   const router = useRouter();
+  const logout = useLogout();
   const user = useSessionStore((s) => s.user)!;
   const { data: children, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["parent-children-status", user.id],
@@ -22,12 +25,26 @@ export default function ParentHomeScreen() {
 
   return (
     <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
-      <Text style={styles.greeting}>مرحباً، {user.name} 👋</Text>
-      <SubscriptionBanner endsAt={subscription?.endsAt} />
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.parent}
+          title="مرحباً بك"
+          subtitle={user.name}
+          icon={<User size={20} color={colors.white} />}
+          right={
+            <View style={styles.headerActions}>
+              <TouchableOpacity style={styles.iconBtn} onPress={() => router.push("/(parent)/notifications")}>
+                <Bell size={18} color={colors.white} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconBtn} onPress={async () => { await logout(); router.replace("/(auth)/role-select"); }}>
+                <LogOut size={18} color={colors.white} />
+              </TouchableOpacity>
+            </View>
+          }
+        />
+      </View>
 
-      <TouchableOpacity onPress={() => router.push("/(parent)/notifications")} style={styles.notifBar}>
-        <Text style={styles.notifBarText}>🔔 الإشعارات</Text>
-      </TouchableOpacity>
+      <SubscriptionBanner endsAt={subscription?.endsAt} />
 
       {isLoading ? (
         <LoadingState />
@@ -75,9 +92,9 @@ export default function ParentHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  greeting: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 10 },
-  notifBar: { backgroundColor: colors.greenLight, borderRadius: 10, padding: 10, marginBottom: 14 },
-  notifBarText: { color: colors.greenMid, fontWeight: "700", textAlign: "center" },
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  headerActions: { flexDirection: "row", gap: 8 },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   muted: { color: colors.gray600, textAlign: "center" },
   row: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6 },
   name: { fontWeight: "700", color: colors.navy, fontSize: 15 },

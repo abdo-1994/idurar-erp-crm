@@ -1,23 +1,6 @@
-import { Text, TouchableOpacity } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { colors } from "@aman-school/shared-ui";
-import { RoleGuardLayout, useLogout } from "../../features/shared/RoleGuardLayout";
-
-function LogoutHeaderButton() {
-  const router = useRouter();
-  const logout = useLogout();
-  return (
-    <TouchableOpacity
-      hitSlop={10}
-      onPress={async () => {
-        await logout();
-        router.replace("/(auth)/role-select");
-      }}
-    >
-      <Text style={{ color: colors.white, fontSize: 13, fontWeight: "700" }}>خروج</Text>
-    </TouchableOpacity>
-  );
-}
+import { RoleGuardLayout } from "../../features/shared/RoleGuardLayout";
 
 export default function DriverLayout() {
   return (
@@ -29,7 +12,7 @@ export default function DriverLayout() {
           headerTitleAlign: "center",
         }}
       >
-        <Stack.Screen name="home" options={{ title: "أمان سكول — السائق", headerRight: LogoutHeaderButton }} />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />

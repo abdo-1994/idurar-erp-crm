@@ -1,9 +1,11 @@
-import { Text, View, StyleSheet, FlatList } from "react-native";
+import { Text, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, StatusPill, colors, EmptyState, ErrorState, LoadingState } from "@aman-school/shared-ui";
+import { Settings, Smartphone } from "lucide-react-native";
+import { Button, Card, GradientHeader, ScreenContainer, StatusPill, colors, roleGradients, EmptyState, ErrorState, LoadingState } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
+import { useSessionStore } from "../../store/session";
 
 const DIRECTION_LABEL: Record<string, string> = { to_school: "ذهاب إلى المدرسة", to_home: "عودة إلى المنزل" };
 const SHIFT_LABEL: Record<string, string> = { morning: "🌅 صباحية", evening: "🌇 مسائية" };
@@ -17,6 +19,7 @@ const STATUS_LABEL: Record<string, string> = { scheduled: "مجدولة", active
 
 export default function TripSelectScreen() {
   const router = useRouter();
+  const user = useSessionStore((s) => s.user)!;
   const setTripId = useActiveTripStore((s) => s.setTripId);
   const { data: trips, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["supervisor", "trips-today"],
@@ -31,7 +34,19 @@ export default function TripSelectScreen() {
 
   return (
     <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
-      <Text style={styles.header}>رحلات اليوم</Text>
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.supervisor}
+          title={user.name}
+          subtitle="رحلات اليوم"
+          icon={<Smartphone size={20} color={colors.white} />}
+          right={
+            <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push("/(supervisor)/settings")}>
+              <Settings size={20} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
       {isLoading ? (
         <LoadingState />
       ) : isError ? (
@@ -61,7 +76,8 @@ export default function TripSelectScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 14 },
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  settingsBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   muted: { color: colors.gray600, textAlign: "center" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   direction: { fontWeight: "700", color: colors.navy, fontSize: 14 },

@@ -1,8 +1,10 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { Activity, LogOut } from "lucide-react-native";
+import { Card, GradientHeader, ScreenContainer, StatusPill, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
+import { useLogout } from "../../features/shared/RoleGuardLayout";
 
 /** OPS-01, adapted from the original 1920x1080 dark-mode control-room design
  * to a mobile-friendly dark layout — same live data, denser desktop-style
@@ -20,6 +22,7 @@ const LINKS = [
 
 export default function ControlRoomScreen() {
   const router = useRouter();
+  const logout = useLogout();
   const {
     data: trips,
     isLoading: tripsLoading,
@@ -34,6 +37,20 @@ export default function ControlRoomScreen() {
 
   return (
     <ScreenContainer backgroundColor={colors.navy} refreshing={tripsRefetching} onRefresh={refetchTrips}>
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.ops_room}
+          title="عمليات المراقبة"
+          subtitle="غرفة العمليات المباشرة"
+          icon={<Activity size={20} color={colors.redMid} />}
+          right={
+            <TouchableOpacity style={styles.iconBtn} onPress={async () => { await logout(); router.replace("/(auth)/role-select"); }}>
+              <LogOut size={20} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
+
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{tripsLoading ? "…" : trips?.length ?? 0}</Text>
@@ -65,6 +82,8 @@ export default function ControlRoomScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   statsRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
   stat: { flex: 1, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 16, alignItems: "center" },
   statValue: { fontSize: 28, fontWeight: "800", color: colors.greenMid },

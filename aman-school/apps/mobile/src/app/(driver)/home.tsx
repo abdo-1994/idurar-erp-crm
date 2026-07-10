@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { Text, TextInput, View, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader, StatusPill, colors } from "@aman-school/shared-ui";
+import { LogOut, Truck } from "lucide-react-native";
+import { Button, Card, EmptyState, ErrorState, GradientHeader, LoadingState, ScreenContainer, SectionHeader, StatusPill, colors, roleGradients, useToast } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
+import { useLogout } from "../../features/shared/RoleGuardLayout";
 
 /* ---- D-02 / d-home: driver's assigned bus, breakdown reporting, SOS ---- */
 export default function DriverHomeScreen() {
   const router = useRouter();
+  const logout = useLogout();
+  const showToast = useToast();
   const user = useSessionStore((s) => s.user)!;
   const queryClient = useQueryClient();
   const [breakdownNotes, setBreakdownNotes] = useState("");
@@ -26,11 +30,11 @@ export default function DriverHomeScreen() {
   const breakdownMutation = useMutation({
     mutationFn: () => api.driver.reportBreakdown(bus!.id, breakdownNotes),
     onSuccess: () => {
-      Alert.alert("تم الإبلاغ", "تم إرسال بلاغ العطل لإدارة المدرسة");
+      showToast("تم إرسال بلاغ العطل لإدارة المدرسة", "success");
       setBreakdownNotes("");
       queryClient.invalidateQueries({ queryKey: ["driver-my-bus"] });
     },
-    onError: () => Alert.alert("تعذر الإرسال", "تحقق من الاتصال بالإنترنت وحاول مرة أخرى"),
+    onError: () => showToast("تعذر الإرسال — تحقق من الاتصال بالإنترنت", "error"),
   });
 
   async function sendSos() {
@@ -45,9 +49,9 @@ export default function DriverHomeScreen() {
         lng = pos.coords.longitude;
       }
       await api.driver.sos({ tripId: null, lat, lng, description: "طوارئ من السائق" });
-      Alert.alert("تم الإرسال", "تم إرسال تنبيه الطوارئ لغرفة العمليات مع موقعك");
+      showToast("تم إرسال تنبيه الطوارئ لغرفة العمليات مع موقعك", "success");
     } catch {
-      Alert.alert("تعذر الإرسال", "تحقق من الاتصال بالإنترنت أو اتصل مباشرة بغرفة العمليات");
+      showToast("تعذر الإرسال — اتصل مباشرة بغرفة العمليات", "error");
     } finally {
       setSending(false);
     }
@@ -62,7 +66,19 @@ export default function DriverHomeScreen() {
 
   return (
     <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
-      <Text style={styles.greeting}>مرحباً، {user.name} 👋</Text>
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.driver}
+          title="كابينة القيادة"
+          subtitle={user.name}
+          icon={<Truck size={20} color={colors.white} />}
+          right={
+            <TouchableOpacity style={styles.logoutBtn} onPress={async () => { await logout(); router.replace("/(auth)/role-select"); }}>
+              <LogOut size={20} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
 
       {isLoading ? (
         <LoadingState />
@@ -122,7 +138,8 @@ export default function DriverHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  greeting: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 14 },
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  logoutBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   busName: { fontWeight: "800", color: colors.navy, fontSize: 15 },
   meta: { color: colors.gray600, fontSize: 12, marginTop: 6 },

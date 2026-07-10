@@ -1,8 +1,10 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card, ErrorState, ScreenContainer, StatusPill, colors } from "@aman-school/shared-ui";
+import { LogOut, Server } from "lucide-react-native";
+import { Card, ErrorState, GradientHeader, ScreenContainer, StatusPill, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
+import { useLogout } from "../../features/shared/RoleGuardLayout";
 
 const LINKS = [
   { href: "/(sysadmin)/users", label: "المستخدمون", icon: "👥" },
@@ -32,6 +34,7 @@ function formatUptime(seconds: number) {
 
 export default function SysadminDashboardScreen() {
   const router = useRouter();
+  const logout = useLogout();
   const { data, isLoading, isError, isRefetching, refetch } = useQuery({
     queryKey: ["sysadmin-dashboard"],
     queryFn: () => api.sysadmin.dashboard() as Promise<Dashboard>,
@@ -40,6 +43,20 @@ export default function SysadminDashboardScreen() {
 
   return (
     <ScreenContainer refreshing={isRefetching} onRefresh={refetch}>
+      <View style={styles.headerBleed}>
+        <GradientHeader
+          gradient={roleGradients.sysadmin}
+          title="مدير النظام"
+          subtitle={isLoading ? "جاري فحص الخدمات..." : `وقت التشغيل: ${formatUptime(data?.uptimeSeconds ?? 0)}`}
+          icon={<Server size={20} color={colors.white} />}
+          right={
+            <TouchableOpacity style={styles.logoutBtn} onPress={async () => { await logout(); router.replace("/(auth)/role-select"); }}>
+              <LogOut size={20} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
+
       {isError ? (
         <ErrorState onRetry={refetch} />
       ) : (
@@ -90,6 +107,8 @@ export default function SysadminDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerBleed: { marginHorizontal: -16, marginTop: -16, marginBottom: 20 },
+  logoutBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
   servicesRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   statCard: { width: "47%", alignItems: "center", paddingVertical: 16 },
