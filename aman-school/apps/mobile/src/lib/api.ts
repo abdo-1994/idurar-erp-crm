@@ -6,6 +6,12 @@ export const api = createApiClient({
   baseUrl: API_BASE_URL,
   getAccessToken: () => useSessionStore.getState().accessToken,
   onUnauthorized: () => {
+    // If this 401 came from an expired impersonation token, fall back to the
+    // owner's own session instead of signing them out entirely.
+    if (useSessionStore.getState().impersonationBackup) {
+      useSessionStore.getState().endImpersonation();
+      return;
+    }
     useSessionStore.getState().clear();
   },
 });

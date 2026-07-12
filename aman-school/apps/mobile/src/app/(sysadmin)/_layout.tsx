@@ -22,6 +22,7 @@ export default function SysadminLayout() {
         <Stack.Screen name="config" options={{ title: "الإعدادات التقنية" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

@@ -31,5 +31,8 @@ export const JwtClaimsSchema = z.object({
   schoolId: z.string().uuid().nullable(),
   partnerId: z.string().uuid().nullable(),
   tenantVersion: z.number().default(1),
+  // owner-impersonate (§13): present only on a temporary impersonation token,
+  // pointing back at the owner who started the session.
+  impersonatedByUserId: z.string().uuid().nullable().optional(),
 });
 export type JwtClaims = z.infer<typeof JwtClaimsSchema>;

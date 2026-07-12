@@ -43,8 +43,11 @@ export function createApiClient(config: ApiClientConfig) {
         http.post<AuthResponse>("/auth/ops-room/login", { email, password }),
       ownerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/owner/login", { email, password }),
+      // sa-login: sysadmin has a mandatory 2FA step — login only starts it.
       sysadminLogin: (email: string, password: string) =>
-        http.post<AuthResponse>("/auth/sysadmin/login", { email, password }),
+        http.post<{ requires2fa: true; email: string; devOtp?: string }>("/auth/sysadmin/login", { email, password }),
+      sysadminVerify2fa: (email: string, code: string) =>
+        http.post<AuthResponse>("/auth/sysadmin/verify-2fa", { email, code }),
       partnerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/partner/login", { email, password }),
       driverLogin: (employeeCode: string) =>
@@ -64,6 +67,7 @@ export function createApiClient(config: ApiClientConfig) {
 
     supervisor: {
       todayTrips: () => http.get<Trip[]>("/supervisor/trips/today"),
+      tripHistory: () => http.get<Trip[]>("/supervisor/trips/history"),
       assignSupervisor: (tripId: string) => http.post(`/trips/${tripId}/assign-supervisor`),
       tripStudents: (tripId: string) => http.get<Student[]>(`/trips/${tripId}/students`),
       startTrip: (tripId: string) => http.post<Trip>(`/trips/${tripId}/start`),
@@ -316,10 +320,29 @@ export function createApiClient(config: ApiClientConfig) {
       lifecyclePolicy: () => http.get("/subscriptions/lifecycle-policy"),
       updateLifecyclePolicy: (body: Record<string, unknown>) => http.put("/subscriptions/lifecycle-policy", body),
       paymentGatewayStatus: () => http.get("/payments/gateway-status"),
+      // owner-features (§12)
+      featureFlags: () => http.get("/owner/feature-flags"),
+      createFeatureFlag: (body: { key: string; labelAr: string; description?: string }) =>
+        http.post("/owner/feature-flags", body),
+      updateFeatureFlag: (id: string, body: { enabledGlobally?: boolean; enabledForSchoolIds?: string[] }) =>
+        http.put(`/owner/feature-flags/${id}`, body),
+      setFeatureFlagForSchool: (id: string, schoolId: string, enabled: boolean) =>
+        http.put(`/owner/feature-flags/${id}/schools/${schoolId}`, { enabled }),
+      // owner-impersonate (§13)
+      startImpersonation: (schoolId: string, reason: string) =>
+        http.post<{ accessToken: string; expiresAt: string; logId: string; targetUser: User }>("/owner/impersonate", { schoolId, reason }),
+      endImpersonation: (logId: string) => http.put(`/owner/impersonate/${logId}/end`),
+      impersonationLogs: () => http.get("/owner/impersonation-logs"),
     },
 
     partner: {
       dashboard: (partnerId: string) => http.get(`/partners/${partnerId}/dashboard`),
+      // partner-leads (§11)
+      leads: (partnerId: string) => http.get(`/partners/${partnerId}/leads`),
+      createLead: (partnerId: string, body: { schoolName: string; contactName: string; phone: string; notes?: string }) =>
+        http.post(`/partners/${partnerId}/leads`, body),
+      updateLead: (partnerId: string, leadId: string, body: { stage?: string; notes?: string }) =>
+        http.put(`/partners/${partnerId}/leads/${leadId}`, body),
     },
 
     sysadmin: {

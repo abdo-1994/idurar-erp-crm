@@ -17,6 +17,7 @@ export default function DriverLayout() {
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

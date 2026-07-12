@@ -22,6 +22,7 @@ export default function SchoolLayout() {
         <Stack.Screen name="buses" options={{ title: "إدارة الباصات" }} />
         <Stack.Screen name="bus/[id]" options={{ title: "تفاصيل الباص" }} />
         <Stack.Screen name="bus-maintenance/[id]" options={{ title: "سجل الصيانة" }} />
+        <Stack.Screen name="maintenance" options={{ title: "صيانة الأسطول" }} />
         <Stack.Screen name="drivers" options={{ title: "إدارة السائقين" }} />
         <Stack.Screen name="calendar" options={{ title: "التقويم الدراسي والعطل" }} />
         <Stack.Screen name="supervisors" options={{ title: "إدارة المشرفين" }} />
@@ -31,7 +32,9 @@ export default function SchoolLayout() {
         <Stack.Screen name="reports" options={{ title: "التقارير والإحصائيات" }} />
         <Stack.Screen name="alerts" options={{ title: "التنبيهات والإشعارات" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات المدرسة" }} />
+        <Stack.Screen name="profile" options={{ title: "ملف المدرسة" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

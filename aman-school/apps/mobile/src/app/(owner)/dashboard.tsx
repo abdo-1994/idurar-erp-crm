@@ -15,6 +15,8 @@ const LINKS = [
   { href: "/(owner)/refunds", label: "طلبات الاسترداد", icon: "💸" },
   { href: "/(owner)/partner-tiers", label: "مستويات الشركاء", icon: "🏅" },
   { href: "/(owner)/analytics", label: "التحليلات", icon: "📈" },
+  { href: "/(owner)/features", label: "الميزات التجريبية", icon: "🧪" },
+  { href: "/(owner)/impersonate", label: "الدخول بحساب مدرسة", icon: "🕵️" },
   { href: "/(owner)/users", label: "المستخدمون", icon: "👥" },
   { href: "/(owner)/notifications", label: "الإشعارات", icon: "🔔" },
   { href: "/(owner)/settings", label: "الإعدادات", icon: "⚙️" },

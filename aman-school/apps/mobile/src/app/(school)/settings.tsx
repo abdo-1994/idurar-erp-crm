@@ -107,6 +107,11 @@ export default function SchoolSettingsScreen() {
         <Text style={styles.subLabel}>لا توجد مدفوعات سابقة</Text>
       )}
 
+      <Button title="حسابي الشخصي" variant="outline" onPress={() => router.push("/(school)/profile")} />
+      <Button title="💬 الدعم الفني" variant="outline" onPress={() => router.push("/(school)/contact")} />
+      <Button title="عن النظام" variant="outline" onPress={() => router.push("/(school)/about")} />
+
+      <View style={{ height: 12 }} />
       <Button
         title="تسجيل الخروج"
         color={colors.red}

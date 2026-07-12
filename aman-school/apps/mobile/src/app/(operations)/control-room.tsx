@@ -10,6 +10,7 @@ import { useLogout } from "../../features/shared/RoleGuardLayout";
  * to a mobile-friendly dark layout — same live data, denser desktop-style
  * grid isn't practical on a phone screen. */
 const LINKS = [
+  { href: "/(operations)/map", label: "🗺️ الخريطة المباشرة", accent: colors.greenMid },
   { href: "/(operations)/alerts", label: "🔔 إدارة التنبيهات", accent: colors.redMid },
   { href: "/(operations)/daily-report", label: "📊 تقرير اليوم", accent: colors.blueMid },
   { href: "/(operations)/communications", label: "💬 التواصل", accent: colors.tealMid },

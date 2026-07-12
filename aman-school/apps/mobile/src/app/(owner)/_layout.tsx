@@ -40,11 +40,14 @@ export default function OwnerLayout() {
         <Stack.Screen name="refunds" options={{ title: "طلبات الاسترداد" }} />
         <Stack.Screen name="partner-tiers" options={{ title: "مستويات عمولة الشركاء" }} />
         <Stack.Screen name="analytics" options={{ title: "تحليلات المنصة" }} />
+        <Stack.Screen name="features" options={{ title: "الميزات التجريبية" }} />
+        <Stack.Screen name="impersonate" options={{ title: "الدخول بحساب مدرسة" }} />
         <Stack.Screen name="settings" options={{ title: "إعدادات النظام", headerRight: LogoutHeaderButton }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="users" options={{ title: "مستخدمو المنصة" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات التنفيذية" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

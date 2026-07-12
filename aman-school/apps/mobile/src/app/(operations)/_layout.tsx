@@ -13,6 +13,7 @@ export default function OperationsLayout() {
         }}
       >
         <Stack.Screen name="control-room" options={{ headerShown: false }} />
+        <Stack.Screen name="map" options={{ title: "الخريطة المباشرة" }} />
         <Stack.Screen name="alerts" options={{ title: "إدارة التنبيهات" }} />
         <Stack.Screen name="incidents" options={{ title: "سجل الحوادث" }} />
         <Stack.Screen name="incident/[id]" options={{ title: "تفاصيل الحادثة" }} />
@@ -22,6 +23,7 @@ export default function OperationsLayout() {
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

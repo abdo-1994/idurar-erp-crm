@@ -152,8 +152,40 @@ authRouter.post("/auth/owner/login", emailPasswordLogin("owner"));
 // Not in the api-client contract but symmetric with the other email/password
 // roles and needed to exercise the Partner Dashboard (OWN-09) independently.
 authRouter.post("/auth/partner/login", emailPasswordLogin("partner"));
-// System Administrator (sa-login) — technical admin, distinct from Owner.
-authRouter.post("/auth/sysadmin/login", emailPasswordLogin("sysadmin"));
+
+/* ---- sa-login: sysadmin gets a mandatory 2nd factor (§ security) on top of
+ * email+password — reuses the OtpCode model exactly like parent OTP, keyed
+ * on email instead of phone (it's just a string column). ---- */
+authRouter.post(
+  "/auth/sysadmin/login",
+  asyncHandler(async (req, res) => {
+    const { email, password } = req.body ?? {};
+    if (!email || !password) throw badRequest("email and password are required");
+    const user = await prisma.user.findFirst({ where: { email, role: "sysadmin" } });
+    if (!user || !user.passwordHash || !compareSecret(password, user.passwordHash)) {
+      throw unauthorized("بيانات خاطئة — invalid email or password");
+    }
+    const code = await issueOtp(email);
+    console.log(`[dev-2fa] Sysadmin 2FA code for ${email}: ${code} (valid 10 minutes)`);
+    res.json({ requires2fa: true, email, ...(env.isProd ? {} : { devOtp: code }) });
+  })
+);
+
+authRouter.post(
+  "/auth/sysadmin/verify-2fa",
+  asyncHandler(async (req, res) => {
+    const { email, code } = req.body ?? {};
+    if (!email || !code) throw badRequest("email and code are required");
+    const valid = await verifyOtp(email, code);
+    if (!valid) throw unauthorized("رمز خاطئ أو منتهي الصلاحية — invalid or expired code");
+
+    const user = await prisma.user.findFirst({ where: { email, role: "sysadmin" } });
+    if (!user) throw unauthorized("Account not found");
+
+    const tokens = await mintTokens({ userId: user.id, role: user.role, schoolId: user.schoolId, partnerId: user.partnerId });
+    res.json({ ...tokens, user: toUserDto(user) });
+  })
+);
 
 /* ---------------- Refresh token rotation ---------------- */
 

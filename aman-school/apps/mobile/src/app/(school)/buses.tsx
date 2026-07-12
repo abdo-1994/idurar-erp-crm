@@ -51,6 +51,8 @@ export default function BusesScreen() {
         />
       )}
 
+      <Button title="🔧 صيانة الأسطول" variant="outline" onPress={() => router.push("/(school)/maintenance")} />
+
       {showAdd ? (
         <View style={{ marginTop: 8 }}>
           <TextInput style={styles.input} value={busNumber} onChangeText={setBusNumber} placeholder="رقم الباص" />

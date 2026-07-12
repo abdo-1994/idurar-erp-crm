@@ -82,7 +82,9 @@ export default function SupervisorSettingsScreen() {
 
       <SectionHeader title="البيانات" accentColor={colors.blueMid} />
       <Button title="مزامنة البيانات الآن" variant="outline" onPress={syncNow} />
+      <Button title="سجل الرحلات" variant="outline" onPress={() => router.push("/(supervisor)/history")} />
       <Button title="💬 الدعم الفني" variant="outline" onPress={() => router.push("/(supervisor)/contact")} />
+      <Button title="عن النظام" variant="outline" onPress={() => router.push("/(supervisor)/about")} />
 
       <View style={{ height: 16 }} />
       <Button

@@ -18,6 +18,14 @@ export function signAccessToken(claims: JwtClaims): string {
   return jwt.sign(claims, env.jwtAccessSecret, { expiresIn: ACCESS_TOKEN_TTL });
 }
 
+/** owner-impersonate (§13): a short-lived access token for a support session
+ * as another user, with no refresh token (it's meant to expire, not renew).
+ * `impersonatedByUserId` rides along in the JWT so any request made under it
+ * can be traced back to the owner who started the session. */
+export function signImpersonationToken(claims: JwtClaims, impersonatedByUserId: string, ttlSeconds: number): string {
+  return jwt.sign({ ...claims, impersonatedByUserId }, env.jwtAccessSecret, { expiresIn: ttlSeconds });
+}
+
 function signRefreshToken(claims: JwtClaims, jti: string): string {
   return jwt.sign({ ...claims, jti }, env.jwtRefreshSecret, { expiresIn: REFRESH_TOKEN_TTL_STR });
 }

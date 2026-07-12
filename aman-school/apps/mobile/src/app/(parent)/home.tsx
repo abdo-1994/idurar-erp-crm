@@ -86,6 +86,7 @@ export default function ParentHomeScreen() {
       <Button title="🧾 الفواتير" variant="outline" onPress={() => router.push("/(parent)/invoices")} />
       <Button title="💳 حالة وسائل الدفع" variant="outline" onPress={() => router.push("/(parent)/payment-status")} />
       <Button title="التواصل والدعم" variant="outline" onPress={() => router.push("/(parent)/contact")} />
+      <Button title="الإعدادات" variant="outline" onPress={() => router.push("/(parent)/settings")} />
       <Button title="حسابي" variant="outline" onPress={() => router.push("/(parent)/profile")} />
     </ScreenContainer>
   );

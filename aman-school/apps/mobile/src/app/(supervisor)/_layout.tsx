@@ -20,6 +20,7 @@ export default function SupervisorLayout() {
         <Stack.Screen name="exception" options={{ title: "تسجيل حالة استثنائية" }} />
         <Stack.Screen name="end-trip" options={{ title: "إنهاء الرحلة" }} />
         <Stack.Screen name="report" options={{ title: "تقرير الرحلة" }} />
+        <Stack.Screen name="history" options={{ title: "سجل الرحلات" }} />
         <Stack.Screen name="sos" options={{ title: "طوارئ", presentation: "modal" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
         <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
@@ -28,6 +29,7 @@ export default function SupervisorLayout() {
         <Stack.Screen name="medical-alert/[studentId]" options={{ title: "طوارئ طبية" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );
