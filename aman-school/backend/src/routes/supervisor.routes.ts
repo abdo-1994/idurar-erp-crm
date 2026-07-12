@@ -43,6 +43,22 @@ supervisorRouter.get(
   })
 );
 
+/* ---- supervisor-history: this supervisor's own past trips (completed +
+ * cancelled), most recent first, for the trip-history screen. ---- */
+supervisorRouter.get(
+  "/supervisor/trips/history",
+  requireRole("supervisor"),
+  asyncHandler(async (req, res) => {
+    const trips = await prisma.trip.findMany({
+      where: { supervisorId: req.user!.sub, status: { in: ["completed", "cancelled"] } },
+      include: { bus: true, events: true },
+      orderBy: { scheduledAt: "desc" },
+      take: 60,
+    });
+    res.json(trips);
+  })
+);
+
 /* ---- S-13: supervisor notifications ---- */
 supervisorRouter.get(
   "/supervisor/:id/notifications",

@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { LogOut, Handshake, School2, Wallet, Megaphone, User } from "lucide-react-native";
+import { LogOut, Handshake, School2, Wallet, Megaphone, User, Users } from "lucide-react-native";
 import { Card, ErrorState, GradientHeader, LoadingState, ScreenContainer, colors, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
@@ -69,6 +69,11 @@ export default function PartnerDashboardScreen() {
       <TouchableOpacity onPress={() => router.push("/(partner)/commissions")}>
         <Card accentColor={roleGradients.partner[0]}>
           <View style={styles.linkRow}><Wallet size={18} color={colors.navy} /><Text style={styles.linkText}>العمولات والأرباح</Text></View>
+        </Card>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/(partner)/leads")}>
+        <Card accentColor={roleGradients.partner[0]}>
+          <View style={styles.linkRow}><Users size={18} color={colors.navy} /><Text style={styles.linkText}>العملاء المحتملون</Text></View>
         </Card>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/(partner)/marketing")}>

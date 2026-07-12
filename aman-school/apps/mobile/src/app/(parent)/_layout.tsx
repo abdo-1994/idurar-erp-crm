@@ -23,7 +23,9 @@ export default function ParentLayout() {
         <Stack.Screen name="trip-history/[id]" options={{ title: "سجل الرحلات" }} />
         <Stack.Screen name="notifications" options={{ title: "الإشعارات" }} />
         <Stack.Screen name="notification-settings" options={{ title: "إعدادات الإشعارات" }} />
+        <Stack.Screen name="settings" options={{ title: "الإعدادات" }} />
         <Stack.Screen name="contact" options={{ title: "التواصل والدعم" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
         <Stack.Screen name="subscription" options={{ title: "الاشتراك والدفع" }} />
         <Stack.Screen name="invoices" options={{ title: "الفواتير" }} />
         <Stack.Screen name="payment-status" options={{ title: "حالة وسائل الدفع" }} />

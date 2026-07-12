@@ -4,6 +4,7 @@ import { Button, Card, ScreenContainer, SectionHeader, colors, roleColors } from
 import { ROLE_LABELS_AR } from "@aman-school/types";
 import { useSessionStore } from "../../store/session";
 import { useLogout } from "./RoleGuardLayout";
+import { ROLE_GROUP } from "./roleHome";
 
 /** Reusable personal-account screen (name/phone/email/role + logout) shared
  * across roles that don't already have a dedicated settings screen covering it.
@@ -41,7 +42,10 @@ export function ProfileScreen({ accentColor }: { accentColor?: string }) {
         ) : null}
       </Card>
 
-      <View style={{ height: 16 }} />
+      <View style={{ height: 12 }} />
+      <Button title="عن النظام" variant="outline" onPress={() => router.push(`${ROLE_GROUP[user.role]}/about` as never)} />
+
+      <View style={{ height: 12 }} />
       <Button
         title="تسجيل الخروج"
         color={colors.red}

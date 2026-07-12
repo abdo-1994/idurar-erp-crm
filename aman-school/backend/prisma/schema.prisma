@@ -135,6 +135,7 @@ model Partner {
   tier  PartnerTier? @relation(fields: [tierId], references: [id])
   schools School[]
   users   User[]
+  leads   Lead[]
 }
 
 model School {
@@ -169,6 +170,7 @@ model School {
   payments          Payment[]
   refunds           Refund[]
   holidays          Holiday[]
+  impersonationLogs ImpersonationLog[]
 }
 
 model Stop {
@@ -394,6 +396,7 @@ model User {
   payments            Payment[]
   medicalAccessLogs   MedicalAccessLog[]
   tripRatings         TripRating[]
+  impersonationLogs   ImpersonationLog[]
 
   @@index([schoolId])
 }
@@ -736,4 +739,63 @@ model PlatformSettings {
   id        String   @id @default("singleton")
   data      Json
   updatedAt DateTime @updatedAt
+}
+
+/// owner-features (§12) — experimental features the owner can roll out to
+/// specific schools before a platform-wide release. enabledGlobally
+/// short-circuits the per-school allowlist once a feature graduates.
+model FeatureFlag {
+  id                  String   @id @default(uuid())
+  key                 String   @unique
+  labelAr             String
+  description         String?
+  enabledGlobally     Boolean  @default(false)
+  enabledForSchoolIds String[] @default([])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+/// owner-impersonate (§13) — a time-boxed, reason-logged support session as
+/// a school_admin. endsAt is always startedAt + 30 minutes; endedAt is set
+/// once the owner explicitly signs back out of the impersonated session.
+model ImpersonationLog {
+  id             String    @id @default(uuid())
+  ownerUserId    String
+  targetSchoolId String
+  reason         String
+  startedAt      DateTime  @default(now())
+  endsAt         DateTime
+  endedAt        DateTime?
+
+  owner  User   @relation(fields: [ownerUserId], references: [id])
+  school School @relation(fields: [targetSchoolId], references: [id])
+
+  @@index([targetSchoolId])
+  @@index([ownerUserId])
+}
+
+enum LeadStage {
+  contacted
+  interested
+  proposal
+  negotiation
+  won
+  lost
+}
+
+/// partner-leads (§11) — a partner's own sales pipeline of prospective schools.
+model Lead {
+  id          String    @id @default(uuid())
+  partnerId   String
+  schoolName  String
+  contactName String
+  phone       String
+  stage       LeadStage @default(contacted)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
 }

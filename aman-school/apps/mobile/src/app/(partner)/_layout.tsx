@@ -15,9 +15,11 @@ export default function PartnerLayout() {
         <Stack.Screen name="dashboard" options={{ headerShown: false }} />
         <Stack.Screen name="schools" options={{ title: "مدارسي المُحالة" }} />
         <Stack.Screen name="commissions" options={{ title: "العمولات والأرباح" }} />
+        <Stack.Screen name="leads" options={{ title: "العملاء المحتملون" }} />
         <Stack.Screen name="marketing" options={{ title: "حقيبة التسويق" }} />
         <Stack.Screen name="profile" options={{ title: "حسابي" }} />
         <Stack.Screen name="contact" options={{ title: "الدعم الفني" }} />
+        <Stack.Screen name="about" options={{ title: "عن النظام" }} />
       </Stack>
     </RoleGuardLayout>
   );

@@ -6,6 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { ToastProvider } from "@aman-school/shared-ui";
 import { queryClient } from "../lib/queryClient";
 import { useSessionStore } from "../store/session";
+import { ImpersonationBanner } from "../features/shared/ImpersonationBanner";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -23,6 +24,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
+          <ImpersonationBanner />
           <Slot />
         </ToastProvider>
       </QueryClientProvider>

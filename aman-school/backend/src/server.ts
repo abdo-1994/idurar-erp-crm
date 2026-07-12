@@ -20,6 +20,7 @@ import { partnerRouter } from "./routes/partner.routes";
 import { subscriptionsRouter } from "./routes/subscriptions.routes";
 import { sysadminRouter } from "./routes/sysadmin.routes";
 import { consentRouter } from "./routes/consent.routes";
+import { internalMigrateRouter } from "./routes/internal-migrate.routes";
 import { initSocketGateway } from "./sockets/gateway";
 import { startGpsSimulator } from "./sockets/simulator";
 
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
 });
 
 app.use(healthRouter);
+app.use(internalMigrateRouter);
 app.use(authRouter);
 app.use(consentRouter);
 app.use(studentsRouter);

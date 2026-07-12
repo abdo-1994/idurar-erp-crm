@@ -38,6 +38,8 @@ export default function DriverSettingsScreen() {
         <Text style={styles.rowLabel}>الاهتزاز عند التنبيهات</Text>
       </View>
       <Button title="حفظ الإعدادات" variant="outline" onPress={() => saveMutation.mutate()} loading={saveMutation.isPending} />
+      <Button title="💬 الدعم الفني" variant="outline" onPress={() => router.push("/(driver)/contact")} />
+      <Button title="عن النظام" variant="outline" onPress={() => router.push("/(driver)/about")} />
 
       <View style={{ height: 16 }} />
       <Button

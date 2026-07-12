@@ -11,3 +11,16 @@ export const ROLE_HOME: Record<Role, string> = {
   sysadmin: "/(sysadmin)/dashboard",
   driver: "/(driver)/home",
 };
+
+/** Each role's route-group prefix — used to build in-group links (e.g. "about")
+ * from shared screens that render inside more than one role's group. */
+export const ROLE_GROUP: Record<Role, string> = {
+  supervisor: "/(supervisor)",
+  parent: "/(parent)",
+  school_admin: "/(school)",
+  ops_room: "/(operations)",
+  owner: "/(owner)",
+  partner: "/(partner)",
+  sysadmin: "/(sysadmin)",
+  driver: "/(driver)",
+};

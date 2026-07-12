@@ -5,6 +5,7 @@ import { authenticate, requireRole } from "../auth/middleware";
 import { badRequest, notFound } from "../lib/errors";
 import { hashSecret } from "../lib/password";
 import { toUserDto } from "../lib/dto";
+import { signImpersonationToken } from "../auth/jwt";
 
 export const ownerRouter = Router();
 ownerRouter.use(authenticate);
@@ -369,5 +370,107 @@ ownerRouter.get(
       },
     ];
     res.json(items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
+  })
+);
+
+/* ---- owner-features (§12): experimental feature flags ---- */
+ownerRouter.get(
+  "/owner/feature-flags",
+  asyncHandler(async (_req, res) => {
+    const flags = await prisma.featureFlag.findMany({ orderBy: { createdAt: "desc" } });
+    res.json(flags);
+  })
+);
+
+ownerRouter.post(
+  "/owner/feature-flags",
+  asyncHandler(async (req, res) => {
+    const { key, labelAr, description } = req.body ?? {};
+    if (!key || !labelAr) throw badRequest("key and labelAr are required");
+    const flag = await prisma.featureFlag.create({ data: { key, labelAr, description: description ?? null } });
+    res.status(201).json(flag);
+  })
+);
+
+ownerRouter.put(
+  "/owner/feature-flags/:id",
+  asyncHandler(async (req, res) => {
+    const flag = await prisma.featureFlag.findUnique({ where: { id: req.params.id } });
+    if (!flag) throw notFound("FeatureFlag");
+    const { enabledGlobally, enabledForSchoolIds } = req.body ?? {};
+    const updated = await prisma.featureFlag.update({
+      where: { id: flag.id },
+      data: {
+        enabledGlobally: enabledGlobally ?? undefined,
+        enabledForSchoolIds: enabledForSchoolIds ?? undefined,
+      },
+    });
+    res.json(updated);
+  })
+);
+
+ownerRouter.put(
+  "/owner/feature-flags/:id/schools/:schoolId",
+  asyncHandler(async (req, res) => {
+    const flag = await prisma.featureFlag.findUnique({ where: { id: req.params.id } });
+    if (!flag) throw notFound("FeatureFlag");
+    const { enabled } = req.body ?? {};
+    const nextSchoolIds = enabled
+      ? Array.from(new Set([...flag.enabledForSchoolIds, req.params.schoolId]))
+      : flag.enabledForSchoolIds.filter((id) => id !== req.params.schoolId);
+    const updated = await prisma.featureFlag.update({ where: { id: flag.id }, data: { enabledForSchoolIds: nextSchoolIds } });
+    res.json(updated);
+  })
+);
+
+/* ---- owner-impersonate (§13): time-boxed, reason-logged support session as
+ * a target school's own school_admin. Requires an existing school_admin user
+ * for that school — the owner steps into a real account, never a synthetic
+ * one, so every action taken during the session attributes normally. ---- */
+const IMPERSONATION_MINUTES = 30;
+
+ownerRouter.post(
+  "/owner/impersonate",
+  asyncHandler(async (req, res) => {
+    const { schoolId, reason } = req.body ?? {};
+    if (!schoolId || !reason) throw badRequest("schoolId and reason are required");
+
+    const targetAdmin = await prisma.user.findFirst({ where: { schoolId, role: "school_admin" } });
+    if (!targetAdmin) throw notFound("No school_admin user found for this school");
+
+    const endsAt = new Date(Date.now() + IMPERSONATION_MINUTES * 60000);
+    const log = await prisma.impersonationLog.create({
+      data: { ownerUserId: req.user!.sub, targetSchoolId: schoolId, reason, endsAt },
+    });
+
+    const accessToken = signImpersonationToken(
+      { sub: targetAdmin.id, role: "school_admin", schoolId, partnerId: null, tenantVersion: 1 },
+      req.user!.sub,
+      IMPERSONATION_MINUTES * 60
+    );
+
+    res.status(201).json({ accessToken, expiresAt: endsAt, logId: log.id, targetUser: toUserDto(targetAdmin) });
+  })
+);
+
+ownerRouter.put(
+  "/owner/impersonate/:logId/end",
+  asyncHandler(async (req, res) => {
+    const log = await prisma.impersonationLog.findUnique({ where: { id: req.params.logId } });
+    if (!log) throw notFound("ImpersonationLog");
+    const updated = await prisma.impersonationLog.update({ where: { id: log.id }, data: { endedAt: new Date() } });
+    res.json(updated);
+  })
+);
+
+ownerRouter.get(
+  "/owner/impersonation-logs",
+  asyncHandler(async (_req, res) => {
+    const logs = await prisma.impersonationLog.findMany({
+      include: { school: true, owner: true },
+      orderBy: { startedAt: "desc" },
+      take: 100,
+    });
+    res.json(logs);
   })
 );
