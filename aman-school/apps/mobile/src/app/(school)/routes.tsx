@@ -34,7 +34,7 @@ export default function RoutesScreen() {
         ?.slice()
         .sort((a, b) => a.order - b.order)
         .map((s: any) => ({ name: s.name, lat: String(s.lat), lng: String(s.lng), radius: String(s.radius ?? 150) })) ??
-        [{ name: "المدرسة", lat: "12.7855", lng: "45.0187", radius: "150" }]
+        [{ name: "المدرسة", lat: "12.7797", lng: "45.0369", radius: "150" }]
     );
     setSensitivity((bus?.route as any)?.deviationSensitivity ?? "medium");
   }
@@ -114,7 +114,7 @@ export default function RoutesScreen() {
       <Button
         title="+ إضافة محطة"
         variant="outline"
-        onPress={() => setStops((prev) => [...prev, { name: "", lat: "12.7855", lng: "45.0187", radius: "150" }])}
+        onPress={() => setStops((prev) => [...prev, { name: "", lat: "12.7797", lng: "45.0369", radius: "150" }])}
       />
 
       <Text style={styles.sensitivityLabel}>حساسية تنبيه الانحراف</Text>

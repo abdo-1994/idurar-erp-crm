@@ -17,14 +17,16 @@
 
   --grad-owner-from: #d97706;
   --grad-owner-to: #92400e;
-  --grad-school_admin-from: #9333ea;
-  --grad-school_admin-to: #6b21a8;
+  --grad-school_admin-from: #7c3aed;
+  --grad-school_admin-to: #5b21b6;
   --grad-sysadmin-from: #475569;
   --grad-sysadmin-to: #1e293b;
   --grad-ops_room-from: #334155;
   --grad-ops_room-to: #0f172a;
   --grad-partner-from: #0891b2;
   --grad-partner-to: #155e75;
+  --grad-regulator-from: #4f46e5;
+  --grad-regulator-to: #3730a3;
 }
 
 @theme inline {
@@ -44,3 +46,4 @@ body {
 .role-gradient-sysadmin { background-image: linear-gradient(135deg, var(--grad-sysadmin-from), var(--grad-sysadmin-to)); }
 .role-gradient-ops_room { background-image: linear-gradient(135deg, var(--grad-ops_room-from), var(--grad-ops_room-to)); }
 .role-gradient-partner { background-image: linear-gradient(135deg, var(--grad-partner-from), var(--grad-partner-to)); }
+.role-gradient-regulator { background-image: linear-gradient(135deg, var(--grad-regulator-from), var(--grad-regulator-to)); }

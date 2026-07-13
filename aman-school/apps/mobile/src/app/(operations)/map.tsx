@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { colors } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 
-const ADEN = { latitude: 12.7855, longitude: 45.0187 };
+const ADEN = { latitude: 12.7797, longitude: 45.0369 };
 
 /** operations-map: fleet-wide live map — every currently-active bus's last
  * known GPS position at once, polling like the rest of the control room

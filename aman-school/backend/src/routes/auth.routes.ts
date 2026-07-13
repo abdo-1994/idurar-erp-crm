@@ -127,7 +127,7 @@ authRouter.post(
 
 /* ---------------- Email + password roles ---------------- */
 
-function emailPasswordLogin(role: "school_admin" | "ops_room" | "owner" | "partner" | "sysadmin") {
+function emailPasswordLogin(role: "school_admin" | "ops_room" | "owner" | "partner" | "sysadmin" | "regulator") {
   return asyncHandler(async (req: import("express").Request, res: import("express").Response) => {
     const { email, password } = req.body ?? {};
     if (!email || !password) throw badRequest("email and password are required");
@@ -152,6 +152,8 @@ authRouter.post("/auth/owner/login", emailPasswordLogin("owner"));
 // Not in the api-client contract but symmetric with the other email/password
 // roles and needed to exercise the Partner Dashboard (OWN-09) independently.
 authRouter.post("/auth/partner/login", emailPasswordLogin("partner"));
+// Web-only, read-only oversight role for regulatory/licensing authorities.
+authRouter.post("/auth/regulator/login", emailPasswordLogin("regulator"));
 
 /* ---- sa-login: sysadmin gets a mandatory 2nd factor (§ security) on top of
  * email+password — reuses the OtpCode model exactly like parent OTP, keyed

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bus, Shield, ShieldCheck, Activity, Handshake, Server, ChevronRight, Loader2 } from "lucide-react";
+import { Bus, Shield, ShieldCheck, Activity, Handshake, Server, Scale, ChevronRight, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { WEB_ROLES, WEB_ROLE_LABELS, WEB_ROLE_DESCRIPTIONS, WEB_ROLE_HOME, type WebRole } from "@/lib/roles";
@@ -14,6 +14,7 @@ const ROLE_ICONS: Record<WebRole, typeof Shield> = {
   ops_room: Activity,
   partner: Handshake,
   sysadmin: Server,
+  regulator: Scale,
 };
 
 const ROLE_GRADIENT: Record<WebRole, string> = {
@@ -22,6 +23,7 @@ const ROLE_GRADIENT: Record<WebRole, string> = {
   ops_room: "role-gradient-ops_room",
   partner: "role-gradient-partner",
   sysadmin: "role-gradient-sysadmin",
+  regulator: "role-gradient-regulator",
 };
 
 type Step = "role" | "credentials" | "2fa";
@@ -60,6 +62,7 @@ export default function LoginPage() {
         role === "owner" ? api.auth.ownerLogin :
         role === "school_admin" ? api.auth.schoolAdminLogin :
         role === "ops_room" ? api.auth.opsRoomLogin :
+        role === "regulator" ? api.auth.regulatorLogin :
         api.auth.partnerLogin;
       const res = await login(email.trim(), password);
       setSession(res);

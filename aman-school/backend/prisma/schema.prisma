@@ -26,6 +26,9 @@ enum Role {
   supervisor
   parent
   driver
+  // Web-only, read-only oversight role for Yemen's regulatory/licensing
+  // authorities — no schoolId/partnerId scoping, no write access.
+  regulator
 }
 
 enum SubscriptionStatus {

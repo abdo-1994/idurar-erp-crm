@@ -19,6 +19,7 @@ import { ownerRouter } from "./routes/owner.routes";
 import { partnerRouter } from "./routes/partner.routes";
 import { subscriptionsRouter } from "./routes/subscriptions.routes";
 import { sysadminRouter } from "./routes/sysadmin.routes";
+import { regulatorRouter } from "./routes/regulator.routes";
 import { consentRouter } from "./routes/consent.routes";
 import { initSocketGateway } from "./sockets/gateway";
 import { startGpsSimulator } from "./sockets/simulator";
@@ -58,6 +59,7 @@ app.use(ownerRouter);
 app.use(partnerRouter);
 app.use(subscriptionsRouter);
 app.use(sysadminRouter);
+app.use(regulatorRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Not found" }));
 app.use(errorHandler);

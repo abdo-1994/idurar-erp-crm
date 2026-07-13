@@ -1,5 +1,6 @@
 /** Design tokens — carried over from the original product design doc (aman_school_screens_doc.jsx). */
 export const colors = {
+  midnight: "#060D1F",
   navy: "#0B2447",
   blue: "#1A5276",
   blueMid: "#2E86C1",
@@ -37,13 +38,14 @@ export const colors = {
  * stop so solid accents and gradient headers always agree for the same role. */
 const roleAccentSource = {
   parent: "#2563EB",
-  supervisor: "#10B981",
+  supervisor: "#059669",
   driver: "#0D9488",
-  school_admin: "#9333EA",
+  school_admin: "#7C3AED",
   ops_room: "#334155",
   owner: "#D97706",
   partner: "#0891B2",
   sysadmin: "#475569",
+  regulator: "#4F46E5",
 } as const;
 export const roleColors: Record<keyof typeof roleAccentSource, string> = roleAccentSource;
 
@@ -68,13 +70,14 @@ export const radius = {
  * cyan-600→800, sysadmin slate-600→800 (distinct from ops_room). */
 export const roleGradients: Record<keyof typeof roleAccentSource, [string, string]> = {
   parent: [roleAccentSource.parent, "#1E40AF"],
-  supervisor: [roleAccentSource.supervisor, "#047857"],
+  supervisor: [roleAccentSource.supervisor, "#065F46"],
   driver: [roleAccentSource.driver, "#115E59"],
-  school_admin: [roleAccentSource.school_admin, "#6B21A8"],
+  school_admin: [roleAccentSource.school_admin, "#5B21B6"],
   ops_room: [roleAccentSource.ops_room, "#0F172A"],
   owner: [roleAccentSource.owner, "#92400E"],
   partner: [roleAccentSource.partner, "#155E75"],
   sysadmin: [roleAccentSource.sysadmin, "#1E293B"],
+  regulator: [roleAccentSource.regulator, "#3730A3"],
 };
 
 /** Elevation presets (iOS shadow* + Android elevation together) — gives cards
