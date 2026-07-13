@@ -1,6 +1,6 @@
 import { Text, View, FlatList, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { Card, EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader, colors, roleGradients } from "@aman-school/shared-ui";
+import { Card, EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader, colors, formatPackagePrice, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -48,7 +48,7 @@ export default function PartnerCommissionsScreen() {
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.commission}>{item.commission.toFixed(0)} ر.ي</Text>
               </View>
-              <Text style={styles.meta}>{item.package?.name} · {item.package?.priceMonthly} ر.ي/شهرياً</Text>
+              <Text style={styles.meta}>{item.package?.name} · {formatPackagePrice(item.package?.priceMonthly ?? 0)}</Text>
             </Card>
           )}
         />

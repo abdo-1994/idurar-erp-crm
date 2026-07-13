@@ -6,6 +6,7 @@ import { Button, Card, StatusPill, colors } from "@aman-school/shared-ui";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../lib/api";
 import { useActiveTripStore } from "../../store/activeTrip";
+import { useLiveLocationReporter } from "../../features/supervisor/useLiveLocationReporter";
 
 /**
  * S-05 (NFC scanning) + S-06 (post-scan confirmation card), reimplemented as a
@@ -27,6 +28,8 @@ export default function ScanScreen() {
     queryFn: () => api.supervisor.liveStatus(tripId),
     refetchInterval: 4000,
   });
+
+  useLiveLocationReporter(tripId, live?.busId, live?.status === "active");
 
   const boardedIds = useMemo(() => new Set((live?.events ?? []).filter((e) => e.type === "board").map((e) => e.studentId)), [live]);
   const alightedIds = useMemo(() => new Set((live?.events ?? []).filter((e) => e.type === "alight").map((e) => e.studentId)), [live]);
@@ -68,6 +71,7 @@ export default function ScanScreen() {
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
       <View style={styles.counterBar}>
         <Text style={styles.counterText}>{boardedCount} / {total} صعدوا</Text>
+        {live?.status === "active" ? <Text style={styles.gpsBadge}>📍 GPS حي نشط</Text> : null}
       </View>
 
       {lastConfirmed ? (
@@ -126,6 +130,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.gray100 },
   counterBar: { backgroundColor: colors.navy, padding: 12, alignItems: "center" },
   counterText: { color: colors.white, fontWeight: "800", fontSize: 16 },
+  gpsBadge: { color: colors.greenMid, fontWeight: "700", fontSize: 11, marginTop: 4 },
   confirmBanner: { padding: 10, alignItems: "center" },
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
   name: { fontWeight: "700", color: colors.navy, fontSize: 14 },

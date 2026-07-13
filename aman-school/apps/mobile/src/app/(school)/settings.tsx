@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Text, TextInput, View, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, SectionHeader, colors } from "@aman-school/shared-ui";
+import { Button, Card, ScreenContainer, SectionHeader, colors, formatPackagePrice } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 import { useLogout } from "../../features/shared/RoleGuardLayout";
@@ -71,7 +71,7 @@ export default function SchoolSettingsScreen() {
       <Card>
         <Text style={styles.subLabel}>الباقة الحالية: {(school as any)?.package?.name ?? "-"}</Text>
         <Text style={styles.subLabel}>الحالة: {school?.subscriptionStatus ?? "-"}</Text>
-        <Text style={styles.subLabel}>السعر الشهري: {(school as any)?.package?.priceMonthly ?? "-"} ر.ي</Text>
+        <Text style={styles.subLabel}>السعر الشهري: {(school as any)?.package ? formatPackagePrice((school as any).package.priceMonthly) : "-"}</Text>
       </Card>
 
       <SectionHeader title="تسديد دفعة الاشتراك" accentColor={colors.amber} />
