@@ -4,6 +4,13 @@ import type { ClientToServerEvents, GpsPing, ServerToClientEvents, Trip, TripEve
 import type { Trip as PrismaTrip, TripEvent as PrismaTripEvent, Alert as PrismaAlert } from "@prisma/client";
 import { env } from "../env";
 import { verifyAccessToken } from "../auth/jwt";
+import { prisma } from "../prisma";
+
+/** busId -> last time a *real* device GPS ping was accepted for it. The
+ * simulator (sockets/simulator.ts) checks this and backs off for any bus
+ * that's actively reporting real positions, so the two sources never fight. */
+export const realGpsLastSeenAt = new Map<string, number>();
+export const REAL_GPS_FRESHNESS_MS = 20000;
 
 /** Prisma returns Date objects for datetime columns; the shared wire types (from
  * @aman-school/types, used by both backend and mobile app) declare ISO date
@@ -46,6 +53,26 @@ export function initSocketGateway(httpServer: HttpServer): AppServer {
     socket.on("unsubscribe:bus", (busId: string) => socket.leave(`bus:${busId}`));
     socket.on("subscribe:school", (schoolId: string) => socket.join(`school:${schoolId}`));
     socket.on("subscribe:operations", (_scopeId: string) => socket.join("operations"));
+
+    socket.on("report:location", async (payload) => {
+      const user = socket.data.user as ReturnType<typeof verifyAccessToken> | undefined;
+      if (!user || user.role !== "supervisor") return;
+      try {
+        const trip = await prisma.trip.findUnique({ where: { id: payload.tripId } });
+        if (!trip || trip.busId !== payload.busId || trip.supervisorId !== user.sub || trip.status !== "active") return;
+
+        const speedKmh = payload.speedKmh ?? 0;
+        await prisma.bus.update({
+          where: { id: payload.busId },
+          data: { currentLat: payload.lat, currentLng: payload.lng, currentSpeedKmh: speedKmh, lastGpsAt: new Date() },
+        });
+        realGpsLastSeenAt.set(payload.busId, Date.now());
+
+        emitBusLocation({ busId: payload.busId, lat: payload.lat, lng: payload.lng, speedKmh, timestamp: new Date().toISOString() }, trip.schoolId);
+      } catch (err) {
+        console.error("[report:location] failed:", err);
+      }
+    });
   });
 
   return io;

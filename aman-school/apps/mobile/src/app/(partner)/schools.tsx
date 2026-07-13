@@ -1,6 +1,6 @@
 import { Text, View, FlatList, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { Card, EmptyState, ErrorState, LoadingState, ScreenContainer, StatusPill, colors, roleGradients } from "@aman-school/shared-ui";
+import { Card, EmptyState, ErrorState, LoadingState, ScreenContainer, StatusPill, colors, formatPackagePrice, roleGradients } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../store/session";
 
@@ -48,7 +48,7 @@ export default function PartnerSchoolsScreen() {
                 <StatusPill label={STATUS_LABEL[item.subscriptionStatus] ?? item.subscriptionStatus} tone={STATUS_TONE[item.subscriptionStatus] ?? "neutral"} />
               </View>
               {item.address ? <Text style={styles.meta}>{item.address}</Text> : null}
-              <Text style={styles.meta}>{item.package ? `${item.package.name} · ${item.package.priceMonthly} ر.ي/شهرياً` : "بدون باقة"}</Text>
+              <Text style={styles.meta}>{item.package ? `${item.package.name} · ${formatPackagePrice(item.package.priceMonthly)}` : "بدون باقة"}</Text>
             </Card>
           )}
         />

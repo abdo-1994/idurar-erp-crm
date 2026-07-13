@@ -15,4 +15,7 @@ export interface ClientToServerEvents {
   "unsubscribe:bus": (busId: string) => void;
   "subscribe:school": (schoolId: string) => void;
   "subscribe:operations": (scopeId: string) => void;
+  // Real device GPS during an active trip (supervisor's phone) — the socket's
+  // own authenticated user must be that trip's supervisor; see gateway.ts.
+  "report:location": (payload: { tripId: string; busId: string; lat: number; lng: number; speedKmh: number | null }) => void;
 }

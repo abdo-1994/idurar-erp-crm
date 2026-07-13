@@ -14,9 +14,11 @@ export async function main() {
 
   // ---- Packages (school-level tiers, YER — matches v3.0 pricing exactly) ----
   const [basic, advanced, full] = await Promise.all([
-    prisma.package.create({ data: { name: "أساسي", priceMonthly: 15000, studentLimit: 50, features: ["حتى باصين", "تتبع مباشر", "إشعارات أساسية"] } }),
-    prisma.package.create({ data: { name: "متقدم", priceMonthly: 45000, studentLimit: 200, features: ["حتى 5 باصات", "تتبع مباشر", "تقارير", "غرفة عمليات"] } }),
-    prisma.package.create({ data: { name: "شامل", priceMonthly: 80000, studentLimit: 100000, features: ["باصات وطلاب غير محدود", "كل الميزات", "دعم مخصص"] } }),
+    prisma.package.create({ data: { name: "أساسي", priceMonthly: 15000, studentLimit: 50, features: ["حتى باصين", "GPS حي", "SMS إشعارات", "دعم بريدي"] } }),
+    prisma.package.create({ data: { name: "متقدم", priceMonthly: 35000, studentLimit: 300, features: ["حتى 5 باصات", "NFC سوار", "SOS طوارئ", "جميع الشاشات", "دعم واتساب"] } }),
+    // Enterprise/شامل is custom-priced ("حسب الطلب") — priceMonthly=0 is the
+    // sentinel the UI (formatPackagePrice) renders as "حسب الطلب" instead of "0 ر.ي".
+    prisma.package.create({ data: { name: "شامل", priceMonthly: 0, studentLimit: 100000, features: ["باصات وطلاب غير محدود", "API كامل", "SLA 99.9%", "مدير نجاح", "تكامل ERP"] } }),
   ]);
 
   // ---- Partner tiers (BC-6, v3.1) ----

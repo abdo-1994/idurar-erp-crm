@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Text, TextInput, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Card, ScreenContainer, colors } from "@aman-school/shared-ui";
+import { Button, Card, ScreenContainer, colors, formatPackagePrice } from "@aman-school/shared-ui";
 import { HttpError } from "@aman-school/api-client";
 import { api } from "../../lib/api";
 
@@ -86,7 +86,7 @@ export default function OwnerOnboardingScreen() {
           <View style={styles.chipsRow}>
             {packages?.map((p) => (
               <TouchableOpacity key={p.id} style={[styles.chip, packageId === p.id && styles.chipActive]} onPress={() => setPackageId(p.id)}>
-                <Text style={[styles.chipText, packageId === p.id && styles.chipTextActive]}>{p.name} — {p.priceMonthly} ر.ي</Text>
+                <Text style={[styles.chipText, packageId === p.id && styles.chipTextActive]}>{p.name} — {formatPackagePrice(p.priceMonthly)}</Text>
               </TouchableOpacity>
             ))}
           </View>

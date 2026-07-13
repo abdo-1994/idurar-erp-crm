@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Text, TextInput, View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, colors } from "@aman-school/shared-ui";
+import { Button, Card, colors, formatPackagePrice } from "@aman-school/shared-ui";
 import { ScreenContainer } from "@aman-school/shared-ui";
 import { api } from "../../lib/api";
 
@@ -30,7 +30,7 @@ export default function OwnerPackagesScreen() {
         renderItem={({ item }) => (
           <Card accentColor={colors.purpleMid}>
             <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.meta}>{item.priceMonthly} ر.ي / شهرياً · حتى {item.studentLimit} طالب</Text>
+            <Text style={styles.meta}>{formatPackagePrice(item.priceMonthly)}{item.priceMonthly > 0 ? " / شهرياً" : ""} · حتى {item.studentLimit} طالب</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
               {item.features?.map((f: string) => (
                 <View key={f} style={styles.featureChip}><Text style={styles.featureText}>{f}</Text></View>

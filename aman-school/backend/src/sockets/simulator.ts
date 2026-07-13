@@ -1,5 +1,5 @@
 import { prisma } from "../prisma";
-import { emitBusLocation } from "./gateway";
+import { emitBusLocation, realGpsLastSeenAt, REAL_GPS_FRESHNESS_MS } from "./gateway";
 
 // Real hardware publishes a GPS ping every 30s over MQTT (see
 // docs/architecture/00-overview.md "Live tracking" + S-04 UX notes). There is
@@ -35,6 +35,12 @@ async function tick() {
 
   for (const trip of activeTrips) {
     const bus = trip.bus;
+
+    // A supervisor's phone is actively reporting real GPS for this bus —
+    // back off entirely so simulated and real positions never fight.
+    const realSeenAt = realGpsLastSeenAt.get(bus.id);
+    if (realSeenAt && Date.now() - realSeenAt < REAL_GPS_FRESHNESS_MS) continue;
+
     const stops = bus.route?.stops.slice().sort((a, b) => a.order - b.order) ?? [];
     if (stops.length < 2) continue;
 
