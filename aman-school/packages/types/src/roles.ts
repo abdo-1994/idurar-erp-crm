@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-/** The 8-level user hierarchy from docs/architecture/00-overview.md (v3.1 adds `driver`) */
+/** The 9-level user hierarchy from docs/architecture/00-overview.md (v3.1 added
+ * `driver`; `regulator` is a web-only, read-only oversight role for Yemen's
+ * regulatory/licensing authorities — no mobile screens, no write access). */
 export const RoleSchema = z.enum([
   "owner",
   "sysadmin",
@@ -10,6 +12,7 @@ export const RoleSchema = z.enum([
   "supervisor",
   "parent",
   "driver",
+  "regulator",
 ]);
 export type Role = z.infer<typeof RoleSchema>;
 
@@ -22,6 +25,7 @@ export const ROLE_LABELS_AR: Record<Role, string> = {
   supervisor: "المشرف",
   parent: "ولي الأمر",
   driver: "السائق",
+  regulator: "الجهات التنظيمية",
 };
 
 /** JWT payload shape, see docs/architecture/01-multi-tenant-design.md */

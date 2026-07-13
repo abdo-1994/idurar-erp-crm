@@ -117,7 +117,7 @@ export type Student = z.infer<typeof StudentSchema>;
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
-  role: z.enum(["owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent", "driver"]),
+  role: z.enum(["owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent", "driver", "regulator"]),
   name: z.string(),
   phone: z.string().nullable(),
   email: z.string().email().nullable(),

@@ -40,8 +40,8 @@ export default function DriverHomeScreen() {
   async function sendSos() {
     setSending(true);
     try {
-      let lat = 12.7855;
-      let lng = 45.0187;
+      let lat = 12.7797;
+      let lng = 45.0369;
       const perm = await Location.requestForegroundPermissionsAsync();
       if (perm.status === "granted") {
         const pos = await Location.getCurrentPositionAsync({});

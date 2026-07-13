@@ -7,7 +7,7 @@ import { colors } from "@aman-school/shared-ui";
 import type { GpsPing } from "@aman-school/types";
 import { api, connectSocket } from "../../../lib/api";
 
-const ADEN = { latitude: 12.7855, longitude: 45.0187 };
+const ADEN = { latitude: 12.7797, longitude: 45.0369 };
 
 export default function TrackingMapScreen() {
   const { busId } = useLocalSearchParams<{ busId: string }>();

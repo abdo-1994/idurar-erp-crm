@@ -50,6 +50,8 @@ export function createApiClient(config: ApiClientConfig) {
         http.post<AuthResponse>("/auth/sysadmin/verify-2fa", { email, code }),
       partnerLogin: (email: string, password: string) =>
         http.post<AuthResponse>("/auth/partner/login", { email, password }),
+      regulatorLogin: (email: string, password: string) =>
+        http.post<AuthResponse>("/auth/regulator/login", { email, password }),
       driverLogin: (employeeCode: string) =>
         http.post<{ ok: true }>("/auth/driver/login", { employeeCode }),
       driverPinVerify: (employeeCode: string, pin: string) =>
@@ -355,6 +357,12 @@ export function createApiClient(config: ApiClientConfig) {
       backup: () => http.get(`/sysadmin/backup`),
       security: () => http.get(`/sysadmin/security`),
       config: () => http.get(`/sysadmin/config`),
+    },
+
+    regulator: {
+      overview: () => http.get(`/regulator/overview`),
+      schools: () => http.get(`/regulator/schools`),
+      incidents: (status?: string) => http.get(`/regulator/incidents${status ? `?status=${status}` : ""}`),
     },
 
     subscriptions: {

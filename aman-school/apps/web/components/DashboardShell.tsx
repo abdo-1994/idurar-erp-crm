@@ -20,6 +20,7 @@ const ROLE_GRADIENT_CLASS: Record<WebRole, string> = {
   ops_room: "role-gradient-ops_room",
   partner: "role-gradient-partner",
   sysadmin: "role-gradient-sysadmin",
+  regulator: "role-gradient-regulator",
 };
 
 export function DashboardShell({ role, nav, title, children }: PropsWithChildren<{ role: WebRole; nav: NavItem[]; title: string }>) {

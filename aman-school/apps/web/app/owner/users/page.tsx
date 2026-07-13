@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { Card, EmptyState, LoadingState } from "@/components/ui";
 import { ROLE_LABELS_AR, type Role } from "@aman-school/types";
 
-const ROLE_FILTERS: Array<Role | ""> = ["", "owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent", "driver"];
+const ROLE_FILTERS: Array<Role | ""> = ["", "owner", "sysadmin", "partner", "school_admin", "ops_room", "supervisor", "parent", "driver", "regulator"];
 
 export default function OwnerUsersPage() {
   const [q, setQ] = useState("");

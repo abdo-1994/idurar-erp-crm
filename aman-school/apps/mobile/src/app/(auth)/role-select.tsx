@@ -5,7 +5,11 @@ import { ChevronLeft, User, Smartphone, Truck, ShieldCheck, Activity, DollarSign
 import { colors, roleGradients, ScreenContainer } from "@aman-school/shared-ui";
 import { ROLE_LABELS_AR, type Role } from "@aman-school/types";
 
-const ROLE_ROUTES: Record<Role, string> = {
+/** `regulator` is a web-only oversight role (see apps/web) — it never appears
+ * in the mobile app's role picker. */
+type MobileRole = Exclude<Role, "regulator">;
+
+const ROLE_ROUTES: Record<MobileRole, string> = {
   supervisor: "/(auth)/supervisor-login",
   parent: "/(auth)/parent-login",
   school_admin: "/(auth)/school-login",
@@ -16,7 +20,7 @@ const ROLE_ROUTES: Record<Role, string> = {
   driver: "/(auth)/driver-login",
 };
 
-const ROLE_DESCRIPTIONS: Record<Role, string> = {
+const ROLE_DESCRIPTIONS: Record<MobileRole, string> = {
   parent: "تتبع الرحلة، إشعارات، استئذان",
   supervisor: "إدارة الطلاب، صعود ونزول (NFC)",
   driver: "القيادة وإبلاغ أعطال المركبة",
@@ -27,7 +31,7 @@ const ROLE_DESCRIPTIONS: Record<Role, string> = {
   partner: "المدارس، العمولات، التسويق",
 };
 
-const ROLE_ICONS: Record<Role, any> = {
+const ROLE_ICONS: Record<MobileRole, any> = {
   parent: User,
   supervisor: Smartphone,
   driver: Truck,
@@ -38,7 +42,7 @@ const ROLE_ICONS: Record<Role, any> = {
   partner: Handshake,
 };
 
-const ROLE_ORDER: Role[] = ["parent", "supervisor", "driver", "school_admin", "ops_room", "owner", "sysadmin", "partner"];
+const ROLE_ORDER: MobileRole[] = ["parent", "supervisor", "driver", "school_admin", "ops_room", "owner", "sysadmin", "partner"];
 
 export default function RoleSelectScreen() {
   const router = useRouter();
