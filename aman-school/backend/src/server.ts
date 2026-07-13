@@ -56,12 +56,17 @@ app.use(emergencyRouter);
 app.use(parentsRouter);
 app.use(notificationsRouter);
 app.use(schoolsRouter);
+// regulatorRouter must be mounted before any router with a blanket, narrow
+// requireRole(...) (operations/owner/sysadmin below) — those apply their role
+// check to every request that reaches them regardless of path, so a role
+// they don't list (like "regulator") gets rejected before Express ever tries
+// a later router's routes.
+app.use(regulatorRouter);
 app.use(operationsRouter);
 app.use(ownerRouter);
 app.use(partnerRouter);
 app.use(subscriptionsRouter);
 app.use(sysadminRouter);
-app.use(regulatorRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Not found" }));
 app.use(errorHandler);
